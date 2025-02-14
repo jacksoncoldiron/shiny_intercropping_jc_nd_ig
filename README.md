@@ -1,4 +1,6 @@
 # intercropping_shinyapp
+### Introduction
+The Intercropping Shiny App is designed to explore the impact of climate, soil conditions, fertilizer use, and intercropping design on agricultural yield. Using an interactive interface, users can visualize and compare different yield metrics (calories, protein, USD, and LER), analyze how environmental and management factors influence intercropping success, and gain insights from advanced statistical modeling. The app serves as a tool for researchers, farmers, and policymakers to make data-driven decisions about sustainable intercropping practices. 
 
 ### Data
 Data from a systematic literature search using terms and applied to Web of Science. Results in a dataset from field experiements published worldwide from 1982 and 2022. Included are (i) general information on the experiments; (ii) experimental site soil and climate conditions; 
@@ -20,6 +22,7 @@ Data repository: https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persisten
 
 **Interactivity:** The selected metric will update the primary yield visualization, allowing users to compare different measures of yield across intercropping setups.
 
+
 #### Widget 2: Climate & Soil Conditions
 **Purpose:** Helps users explore the relationship between intercropping performance and environmental factors.
 
@@ -29,6 +32,7 @@ Data repository: https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persisten
 
 **Interactivity:** Users select a soil variable, and the bar graph updates to compare LER performance across different climate types under the chosen soil condition.
 
+
 #### Widget 3: Fertilizer Variables
 **Purpose:** Examines the impact of different fertilizer levels and types on intercropping performance.
 
@@ -37,6 +41,7 @@ Data repository: https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persisten
 - A slider (sliderInput) to filter data by fertilizer application rates.
 
 **Interactivity:** Users can adjust the slider to focus on specific fertilizer levels and see how they influence intercropping performance.
+
 
 #### Widget 4: Intercropping Design Variables
 **Purpose:** Investigates how different intercropping designs affect productivity.
