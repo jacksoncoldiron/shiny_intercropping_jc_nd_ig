@@ -5,6 +5,7 @@ Data from a systematic literature search using terms and applied to Web of Scien
 (iii) descriptions of intercropping designs; (iv) crop management practices; (v) measurements of sole crop and interscop yields and (v) Land Equivalent Ratios.
 
 *Source:* Paut, R., Garreau, L., Ollivier, G. et al. A global dataset of experimental intercropping and agroforestry studies in horticulture. Sci Data 11, 5 (2024). https://doi.org/10.1038/s41597-023-02831-7
+Data repository: https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1
 
 ### Description of Widgets
 
