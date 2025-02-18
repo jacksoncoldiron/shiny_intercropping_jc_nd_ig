@@ -1,10 +1,12 @@
 library(tidyverse)
 library(palmerpenguins)
 library(shiny)
+library(bslib)
 
 ### create the user interface
 
 ui<-fluidPage(
+  theme = bs_theme(bootswatch = "sandstone"),
   titlePanel("I am adding a title"),
   sidebarLayout(
     sidebarPanel('put my widgets here',
