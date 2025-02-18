@@ -10,6 +10,6 @@ library(shiny)
 library(tidyverse)
 library(here)
 
-intercrop <- read_csv(here("data/1. Database.csv"))
+intercrop <- read_delim(delim = ';', here("data", "Database.csv"))
 
                       
