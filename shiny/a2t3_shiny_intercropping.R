@@ -12,8 +12,8 @@ ui<-fluidPage(
     sidebarPanel('put my widgets here',
                  radioButtons(
                    inputId = 'penguin_species',
-                   label='Choose penguin species',
-                   choices=c('Adelie','Gentoo','Chinstrap')
+                   label='Select relevant metric',
+                   choices=c('Calories','Protein','USD Value','LER Ratio')
                  ),
                  selectInput(inputId = 'pt_color',
                              label='select point color',
@@ -31,7 +31,7 @@ ui<-fluidPage(
 
 server<-function(input,output){
   penguin_select<-reactive({
-    penguins_df<-penguins |>
+    intercrop_df<-intercrop |>
       filter(species==input$penguin_species)
   })
   
@@ -52,7 +52,7 @@ server<-function(input,output){
   output$penguin_table<-renderTable({
     penguin_sum_table()
   })
-    
+  
 }
 
 ### To finalize shiny app we have to combine them into an app
