@@ -3,7 +3,7 @@ library(shiny)
 library(bslib)
 
 ### load data
-intercrop <- read_delim(delim = ';', here("data", "Database.csv"))
+intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
 ### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period
 intercrop$Yield_total_intercropping <- as.numeric(gsub(",", ".", intercrop$Yield_total_intercropping))
@@ -15,23 +15,51 @@ intercrop <- intercrop|>
 
 
 ### create the user interface
-
-ui<-fluidPage(
-  theme = bs_theme(bootswatch = "sandstone"),
-  titlePanel("Widget 1: Intercropping Yield by Continent"),
-  sidebarLayout(
-    sidebarPanel('Areas Researched',
+ui <- fluidPage(
+  navbarPage(
+    'Navbar title',
+    theme = bs_theme(bootswatch = "sandstone"),
+    
+    tabPanel("Widget 1: Intercropping Yield by Continent",
+             sidebarLayout(
+               sidebarPanel(
+                 'Areas Researched',
                  radioButtons(
                    inputId = 'Continent_type',
-                   label='Select Continent',
-                   choices=c("South Asia","Middle East & North Africa", "Sub-Saharan Africa",
-                             "Latin America & Caribbean","East Asia & Pacific","Europe & Central Asia",
-                             "North America","NA")
-                 )),
-  mainPanel('Intercropping experimental yield over time',
-              plotOutput(outputId = 'intercrop_plot'),
-              h3('summary table'),
-              tableOutput(outputId = 'intercrop_table'))
+                   label = 'Select Continent',
+                   choices = c("South Asia","Middle East & North Africa", "Sub-Saharan Africa",
+                               "Latin America & Caribbean","East Asia & Pacific","Europe & Central Asia",
+                               "North America","NA")
+                 )
+               ),               
+               mainPanel(
+                 'Intercropping experimental yield over time',
+                 plotOutput(outputId = 'intercrop_plot'),
+                 h3('Summary Table'),
+                 tableOutput(outputId = 'intercrop_table')
+               )
+             )
+    ),
+    
+    tabPanel("LER by Crop Types",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput(
+                   inputId = "crop1_type",
+                   label = "Crop 1 type:",
+                   choices = unique(intercrop$Crop_1_Common_Name)
+                 ),
+                 selectInput(
+                   inputId = "crop2_type",
+                   label = "Crop 2 type:",
+                   choices = unique(intercrop$Crop_1_Common_Name)
+                 )
+               ),
+               mainPanel(
+                 'Barchart of different LERs for crops selected'
+               )
+             )
+    )
   )
 )
 
