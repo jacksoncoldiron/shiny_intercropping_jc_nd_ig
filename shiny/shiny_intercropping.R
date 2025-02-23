@@ -17,7 +17,7 @@ intercrop <- intercrop|>
 ### create the user interface
 ui <- fluidPage(
   navbarPage(
-    'Navbar title',
+    'Exploring Intercropping Experiments',
     theme = bs_theme(bootswatch = "sandstone"),
     
     tabPanel("Widget 1: Intercropping Yield by Continent",
