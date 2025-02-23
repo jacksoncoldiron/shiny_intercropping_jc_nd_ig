@@ -13,6 +13,22 @@ intercrop <- intercrop|>
   mutate(start_year = as.numeric(str_extract(intercrop$Experiment_period, "^[0-9]{4}")))|>
   mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$")))
 
+### Adding in different dataframers for plots
+# Take only the time and country for Widget 1
+intercrop_time <- intercrop |>
+  janitor::clean_names() |>
+  mutate(year = end_year) |>
+  select(c(country, continent, year)) |>
+  drop_na() |>
+  group_by(year, country, continent) |>
+  summarise(count = n(), .groups = "drop") |>
+  arrange(year, country)
+
+cumulative <- intercrop_time |>
+  group_by(continent) |>
+  mutate(cumulative_experiments = cumsum(count)) |>
+  ungroup()
+
 
 ### create the user interface
 ui <- fluidPage(
@@ -21,22 +37,20 @@ ui <- fluidPage(
     theme = bs_theme(bootswatch = "sandstone"),
     
     tabPanel("Widget 1: Intercropping Yield by Continent",
+             titlePanel("Cumulative Experiments Over Time by Continent"),
              sidebarLayout(
                sidebarPanel(
-                 'Areas Researched',
-                 radioButtons(
-                   inputId = 'Continent_type',
-                   label = 'Select Continent',
-                   choices = c("South Asia","Middle East & North Africa", "Sub-Saharan Africa",
-                               "Latin America & Caribbean","East Asia & Pacific","Europe & Central Asia",
-                               "North America","NA")
-                 )
-               ),               
+                 checkboxGroupInput("continent", "Select Continents:",
+                                    choices = unique(cumulative$continent),
+                                    selected = unique(cumulative$continent))
+               ),
                mainPanel(
-                 'Intercropping experimental yield over time',
-                 plotOutput(outputId = 'intercrop_plot'),
-                 h3('Summary Table'),
-                 tableOutput(outputId = 'intercrop_table')
+                 plotOutput("plotCumulative"),
+                 sliderInput("yearRange", "Select Year Range:",
+                             min = min(cumulative$year),
+                             max = max(cumulative$year),
+                             value = c(min(cumulative$year), max(cumulative$year)),
+                             step = 1)
                )
              )
     ),
@@ -67,19 +81,23 @@ ui <- fluidPage(
 ### create the server function (where all the magic happens from data analysis)
 
 server<-function(input,output){
-  intercrop_select<-reactive({
-    intercrop_df<-intercrop |>
-      filter(Continent==input$Continent_type)
+  filteredData <- reactive({
+    cumulative |>
+      filter(year >= input$yearRange[1],
+             year <= input$yearRange[2],
+             continent %in% input$continent)
   })
   
-  output$intercrop_plot<-renderPlot({
-    ggplot(data=intercrop_select(),
-           aes(x=start_year,y=Yield_total_intercropping,fill=Continent))+
-      geom_line(outlier.shape = NA)+
-      geom_point(outlier.shape = NA)+
-      theme(axis.title.x = element_blank(),
-            axis.title.y = element_blank(),
-            legend.position = "none")
+  output$plotCumulative <- renderPlot({
+    ggplot(filteredData(), aes(x = year, y = cumulative_experiments, 
+                               color = continent, group = continent)) +
+      geom_line() +
+      geom_point(size = 1) +
+      theme_classic() +
+      scale_color_viridis_d(option = "viridis") +
+      labs(x = "Year", 
+           y = "Cumulative Experiments", 
+           title = paste("Cumulative Experiments Over Time in", input$continent))
   })
   
   intercrop_sum_table<-reactive({
