@@ -34,8 +34,10 @@ cumulative <- intercrop_time |>
 ui <- fluidPage(
   navbarPage(
     'Exploring Intercropping Experiments',
+    # Add in theme
     theme = bs_theme(bootswatch = "sandstone"),
     
+    # Add the option to select the continent
     tabPanel("Widget 1: Intercropping Yield by Continent",
              titlePanel("Cumulative Experiments Over Time by Continent"),
              sidebarLayout(
@@ -44,6 +46,8 @@ ui <- fluidPage(
                                     choices = unique(cumulative$continent),
                                     selected = unique(cumulative$continent))
                ),
+               
+               # Plotting the cumulative experiments over time
                mainPanel(
                  plotOutput("plotCumulative"),
                  sliderInput("yearRange", "Select Year Range:",
@@ -79,7 +83,7 @@ ui <- fluidPage(
 
 
 ### create the server function (where all the magic happens from data analysis)
-
+# Year range slider for user to select the year range
 server<-function(input,output){
   filteredData <- reactive({
     cumulative |>
@@ -88,6 +92,7 @@ server<-function(input,output){
              continent %in% input$continent)
   })
   
+  # Create the plot for experiments over time
   output$plotCumulative <- renderPlot({
     ggplot(filteredData(), aes(x = year, y = cumulative_experiments, 
                                color = continent, group = continent)) +
