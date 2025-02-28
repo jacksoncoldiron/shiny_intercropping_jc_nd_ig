@@ -1,0 +1,167 @@
+---
+title: "Intercropping Data Exploration"
+author: 'Isa Elias'
+editor: visual
+format: 
+  html:
+    embed-resources: true
+    code-fold: true
+    toc: true
+execute:
+  warning: false
+  message: false
+---
+
+## Load Libs
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+## Load data and clean
+
+```{r}
+
+intercrop_raw <- read_delim(delim = ';', here("data", "Database.csv"))
+
+intercrop <- intercrop_raw |>
+  select('Country', 'Latitude', 'Longitude', 'Continent', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
+  clean_names() |>
+  rename(crop1 = crop_1_common_name, crop2 = crop_2_common_name) 
+
+### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period
+
+intercrop$latitude <- as.numeric(gsub(",", ".", intercrop$latitude))
+intercrop$longitude <- as.numeric(gsub(",", ".", intercrop$longitude))
+
+intercrop$ler_tot <- as.numeric(gsub(",", ".", intercrop$ler_tot))
+intercrop$ler_crop1 <- as.numeric(gsub(",", ".", intercrop$ler_crop1))
+intercrop$ler_crop2 <- as.numeric(gsub(",", ".", intercrop$ler_crop2))
+
+# Change experiment year to just the earliest year
+intercrop$experiment_year <- substr(intercrop$experiment_year, 1, 4)
+
+```
+
+## Explore data
+
+```{r}
+unique(intercrop$crop1)
+unique(intercrop$crop2)
+
+crop1_freq <- intercrop |>
+  group_by(crop1)|>
+  summarize(n = n())|>
+  arrange(desc(n))|>
+  slice(1:15)
+
+ggplot(intercrop |> filter(crop1 %in% crop1_freq$crop1), aes(x = crop1))+
+  geom_bar()
+
+crop2_freq <- intercrop |>
+  group_by(crop2)|>
+  summarize(n = n())|>
+  arrange(desc(n))|>
+  slice(1:15)
+
+ggplot(intercrop |> filter(crop2 %in% crop2_freq$crop2), aes(x = crop2))+
+  geom_bar()
+
+intercrop_top <- intercrop|>
+  filter(crop1 %in% crop1_freq$crop1)
+
+unique(intercrop_top$crop1)
+unique(intercrop_top$crop2)
+
+# Find overlap between crop1 name and crop2 name
+unique(intercrop_top$crop1)[(unique(intercrop_top$crop1) %in% unique(intercrop_top$crop2))]
+
+common_crops <- intersect(intercrop_top$crop1, intercrop_top$crop2)
+
+length(common_crops)
+
+
+
+
+```
+
+### Look at Maize
+
+```{r}
+
+crop_1 <- 'Maize'
+
+crop_1_intercrop <- intercrop|>
+  filter(crop1 == crop_1)|>
+  drop_na(ler_crop1)
+
+
+crop2_freq <- crop_1_intercrop |>
+  group_by(crop2)|>
+  summarize(n = n())|>
+  arrange(desc(n))|>
+  slice(1:10)
+
+ggplot(crop_1_intercrop |> filter(crop2 %in% crop2_freq$crop2), aes(x = crop2))+
+  geom_bar()
+```
+
+### Plot Maize vs Bean LER comparison
+
+```{r}
+
+
+crop_1 <- 'Maize'
+crop_2 <- 'Bean'
+
+crop_1_intercrop <- intercrop|>
+  filter(crop1 == crop_1)
+
+crop_12 <- crop_1_intercrop |>
+  filter(crop2 == crop_2)|>
+  drop_na(ler_crop1, ler_crop2)
+
+ggplot(data = crop_12)+
+  geom_point(aes(x=ler_crop1, y = ler_crop2, color = intercropping_pattern))+
+  geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
+             linetype = "dashed", color = "black") +
+  #xlim(0,1.25)+
+  #ylim(0,1.25)+
+  labs(x = "Maize LER", y = "Bean LER")+
+  theme_bw()
+```
+
+### Plot LERs for three crop type combos
+
+```{r}
+
+
+crop_1a <- 'Maize'
+crop_2a <- 'Bean' # Cowpea
+
+crop_1b <- 'Apple'
+crop_2b <- 'Maize' # Millet Maize Peanut
+
+crop_1c <- 'Tomato'
+crop_2c <- 'Maize' #Cucumber Lettuce Wheat Maize Cowpea Bean
+
+legend_vec <- c(paste(crop_1a, "and", crop_2a), paste(crop_1b, "and", crop_2b), paste(crop_1c, "and", crop_2c))
+
+ggplot()+
+  geom_point(data = intercrop|> filter(crop1 == crop_1a, crop2 == crop_2a) |> drop_na(ler_crop1, ler_crop2),
+             aes(x=ler_crop1, y = ler_crop2, color = , color=legend_vec[1], shape = intercropping_pattern))+
+  geom_point(data = intercrop|> filter(crop1 == crop_1b, crop2 == crop_2b) |> drop_na(ler_crop1, ler_crop2),
+             aes(x=ler_crop1, y = ler_crop2, color=, color=legend_vec[2], shape = intercropping_pattern))+
+  geom_point(data = intercrop|> filter(crop1 == crop_1c, crop2 == crop_2c) |> drop_na(ler_crop1, ler_crop2),
+             aes(x=ler_crop1, y = ler_crop2, color=legend_vec[3], shape = intercropping_pattern))+
+  geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
+             linetype = "dashed", color = "black") +
+  #xlim(0,1.25)+
+  #ylim(0,1.25)+
+  labs(x = "crop 1 LER", y = "crop 2 LER", color = "crop combination") + 
+  theme_bw()
+
+  
+```
