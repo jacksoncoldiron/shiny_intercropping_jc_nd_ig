@@ -112,6 +112,11 @@ ui <- fluidPage(
                  'Barchart of different LERs for crops selected'
                )
              )
+    ),
+    
+    tabPanel("PCA Biplot", 
+             # Place for the chart
+             plotOutput("PCA_plot")
     )
   )
 )
@@ -150,6 +155,20 @@ server<-function(input,output){
   
   output$intercrop_table<-renderTable({
     intercrop_sum_table()
+  })
+  
+  output$PCA_plot<-renderPlot({
+    autoplot(intercrop_pca_scale,
+             data = intercrop_pca_data_clean,
+             loadings = TRUE,
+             colour = 'end_year',
+             loadings.label = TRUE,
+             loadings.colour = "black",
+             loadings.label.colour = "black",
+             loadings.label.vjust = -0.5
+    ) +
+      scale_x_continuous()+
+      theme_minimal()
   })
   
 }
