@@ -76,13 +76,13 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
 # See Loadings for each PC
 # intercrop_pca_scale$rotation
 
-# Scree Plot to assess variance expaliend by each PC
+# Scree Plot to assess variance explained by each PC
 screeplot(intercrop_pca_scale,type="lines")
 screeplot(intercrop_pca_scale,type="barplot")
 
 
 # Plot a PCA
-autoplot(intercrop_pca_scale,
+PCA_plot<-autoplot(intercrop_pca_scale,
          data = intercrop_pca_data_clean,
          loadings = TRUE,
          colour = 'end_year',
