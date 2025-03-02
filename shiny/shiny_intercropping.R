@@ -29,6 +29,41 @@ cumulative <- intercrop_time |>
   mutate(cumulative_experiments = cumsum(count)) |>
   ungroup()
 
+### PCA Biplot data setup
+# Select out the relevant variables we want to assess for PCA
+intercrop_pca_data<-intercrop |>
+  select(LER_tot_calc,Crop_1_Common_Name,Crop_2_Common_Name,
+         Intercropping_design,Intercropping_pattern,Nitrogen_rate_kg_ha,
+         Experiment_period,Country,Latitude)|>
+  mutate(end_year=as.numeric(str_extract(Experiment_period,"(?<=-)\\d{4}$")))|> # Extract end year from experiment period
+  mutate(maize=ifelse(Crop_1_Common_Name=="Maize"|Crop_2_Common_Name=="Maize",1,0))|>
+  mutate(no_maize=ifelse(!(Crop_1_Common_Name=="Maize"|Crop_2_Common_Name=="Maize"),1,0))|>
+  mutate(china=ifelse(Country=="China",1,0))|>
+  mutate(rest_of_world=ifelse(Country!="China",1,0))|>
+  mutate(Nitrogen_rate_kg_ha=na_if(Nitrogen_rate_kg_ha,"Unclear"))|>
+  mutate(Additive_pattern=ifelse(Intercropping_design=="Additive",1,0))|>
+  mutate(Replacement_pattern=ifelse(Intercropping_design=="Replacement",1,0))|>
+  mutate(Row_intercropping=ifelse(Intercropping_pattern=="Row",1,0))|>
+  mutate(AF_intercropping=ifelse(Intercropping_pattern=="AF",1,0))|>
+  mutate(Strip_intercropping=ifelse(Intercropping_pattern=="Strip",1,0))|>
+  mutate(Mixed_intercropping=ifelse(Intercropping_pattern=="Mixed",1,0))|>
+  select(-Crop_1_Common_Name,-Crop_2_Common_Name,-Country,-Experiment_period,-Intercropping_design,-Intercropping_pattern)|>
+  drop_na()
+
+
+# Change "," values in numeric values to "."
+intercrop_pca_data$LER_tot_calc <-as.numeric(gsub(",",".",intercrop_pca_data$LER_tot_calc))
+intercrop_pca_data$Nitrogen_rate_kg_ha <-as.numeric(gsub(",",".",intercrop_pca_data$Nitrogen_rate_kg_ha))
+intercrop_pca_data$Latitude <-as.numeric(gsub(",",".",intercrop_pca_data$Latitude))
+
+# Check for NAs
+intercrop_pca_data_clean<-na.omit(intercrop_pca_data)
+
+# Scale PCA data
+intercrop_pca_scale<-intercrop_pca_data_clean|>
+  prcomp(scale.=TRUE)
+
+
 
 ### create the user interface
 ui <- fluidPage(
