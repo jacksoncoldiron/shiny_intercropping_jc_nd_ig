@@ -100,7 +100,8 @@ ui <- fluidPage(
                              min = min(cumulative$year),
                              max = max(cumulative$year),
                              value = c(min(cumulative$year), max(cumulative$year)),
-                             step = 1)
+                             step = 1,
+                             sep = "")
                )
              )
     ),
