@@ -84,7 +84,7 @@ ui <- fluidPage(
     theme = bs_theme(bootswatch = "sandstone"),
     
     # Add the option to select the continent
-    tabPanel("Widget 1: Intercropping Yield by Continent",
+    tabPanel("Intercropping Yield by Continent",
              titlePanel("Cumulative Experiments Over Time by Continent"),
              sidebarLayout(
                sidebarPanel(
