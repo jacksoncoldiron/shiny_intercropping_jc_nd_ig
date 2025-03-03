@@ -41,7 +41,7 @@ intercrop$ler_crop1 <- as.numeric(gsub(",", ".", intercrop$ler_crop1))
 intercrop$ler_crop2 <- as.numeric(gsub(",", ".", intercrop$ler_crop2))
 
 # Change experiment year to just the earliest year
-intercrop$experiment_year <- substr(intercrop$experiment_year, 1, 4)
+intercrop$experiment_year <- substr(intercrop$experiment_year, length(intercrop$experiment_year)-3, length(intercrop$experiment_year))
 
 ```
 

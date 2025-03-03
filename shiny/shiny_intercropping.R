@@ -2,18 +2,21 @@ library(tidyverse)
 library(shiny)
 library(bslib)
 
-### load data
+
+### load data ###  
 intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
-### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period
+### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
 intercrop$Yield_total_intercropping <- as.numeric(gsub(",", ".", intercrop$Yield_total_intercropping))
 intercrop$LER_tot <- as.numeric(gsub(",", ".", intercrop$LER_tot))
+intercrop$LER_crop1 <- as.numeric(gsub(",", ".", intercrop$LER_crop1))
+intercrop$LER_crop2 <- as.numeric(gsub(",", ".", intercrop$LER_crop2))
 
 intercrop <- intercrop|>
   mutate(start_year = as.numeric(str_extract(intercrop$Experiment_period, "^[0-9]{4}")))|>
   mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$")))
 
-### Adding in different dataframers for plots
+### Adding in different dataframes for plots ### 
 # Take only the time and country for Widget 1
 intercrop_time <- intercrop |>
   janitor::clean_names() |>
@@ -29,9 +32,9 @@ cumulative <- intercrop_time |>
   mutate(cumulative_experiments = cumsum(count)) |>
   ungroup()
 
-### PCA Biplot data setup
+### PCA Biplot data setup ### 
 # Select out the relevant variables we want to assess for PCA
-intercrop_pca_data<-intercrop |>
+intercrop_pca_data <- intercrop |>
   select(LER_tot_calc,Crop_1_Common_Name,Crop_2_Common_Name,
          Intercropping_design,Continent,Intercropping_pattern,
          Experiment_period,Country,Latitude)|>
@@ -49,7 +52,6 @@ intercrop_pca_data<-intercrop |>
   select(-Crop_1_Common_Name,-Crop_2_Common_Name,-Country,-Experiment_period,-Intercropping_design,-Intercropping_pattern)|>
   drop_na()
 
-
 # Change "," values in numeric values to "."
 intercrop_pca_data$LER_tot_calc <-as.numeric(gsub(",",".",intercrop_pca_data$LER_tot_calc))
 intercrop_pca_data$Latitude <-as.numeric(gsub(",",".",intercrop_pca_data$Latitude))
@@ -64,7 +66,17 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
 
 
 
-### create the user interface
+### LER plots data setup ###
+intercrop_LER <- intercrop |>
+  select('Country', 'Continent', 'end_year', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
+  janitor::clean_names() |>
+  rename(crop1 = crop_1_common_name, crop2 = crop_2_common_name, year = end_year) |>
+  mutate(intercropping_pattern = as.factor(intercropping_pattern)) |>
+  mutate(country = as.factor(country))
+
+
+
+### create the user interface ### 
 ui <- fluidPage(
   navbarPage(
     'Exploring Intercropping Experiments',
@@ -98,17 +110,19 @@ ui <- fluidPage(
                sidebarPanel(
                  selectInput(
                    inputId = "crop1_type",
-                   label = "Crop 1 type:",
+                   label = "Crop 1:",
+                   selected = 'Maize',
                    choices = unique(intercrop$Crop_1_Common_Name)
                  ),
                  selectInput(
                    inputId = "crop2_type",
-                   label = "Crop 2 type:",
-                   choices = unique(intercrop$Crop_1_Common_Name)
+                   label = "Crop 2:",
+                   selected = 'Cowpea',
+                   choices = NULL # initialize empty, will be updated dynamically
                  )
                ),
                mainPanel(
-                 'Barchart of different LERs for crops selected'
+                 plotOutput('LER_plot')
                )
              )
     ),
@@ -121,9 +135,9 @@ ui <- fluidPage(
 )
 
 
-### create the server function (where all the magic happens from data analysis)
+### create the server function (where all the magic happens from data analysis) ### 
 # Year range slider for user to select the year range
-server<-function(input,output){
+server<-function(input,output, session){
   filteredData <- reactive({
     cumulative |>
       filter(year >= input$yearRange[1],
@@ -169,6 +183,54 @@ server<-function(input,output){
       theme_minimal()
   })
   
+  #### Tab 2: LER plots ####
+  
+  observe({
+    # Get valid crop2 choices for default crop1 (Maize)
+    initial_choices <- unique(intercrop_LER |>
+                                filter(crop1 == "Maize") |>
+                                pull(crop2))
+    
+    updateSelectInput(session, "crop2_type",
+                      choices = initial_choices,
+                      selected = "Cowpea")
+  })
+  
+  # Update crop2 choices dynamically based on crop1 selection
+  observeEvent(input$crop1_type, {
+    filtered_choices <- unique(intercrop |> 
+                                 filter(Crop_1_Common_Name == input$crop1_type) |> 
+                                 pull(Crop_2_Common_Name))
+    
+    updateSelectInput(session, "crop2_type", choices = filtered_choices)
+  })
+  
+  intercrop_LER_filtered <- reactive({
+    intercrop_LER |>
+    filter(crop1 == input$crop1_type, 
+           crop2 == input$crop2_type) |>
+      drop_na(ler_crop1, ler_crop2)
+  })
+  
+  output$LER_plot <- renderPlot({
+    
+    ggplot(data = intercrop_LER_filtered(), aes(x=ler_crop1, y = ler_crop2, color = country))+
+      geom_point(size = 3)+
+      geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
+                   linetype = "dashed", color = "black") +
+      #xlim(0,1.25)+
+      #ylim(0,1.25)+
+      labs(x = paste0(input$crop1_type, ' LER'), y = paste0(input$crop2_type, ' LER'), color = 'Country')+
+      theme_bw()+
+      theme(
+        text = element_text(size = 20),              # Change all text size
+        axis.text = element_text(size = 20),         # Axis tick labels
+        axis.title = element_text(size = 20),        # Axis titles
+        legend.text = element_text(size = 20),       # Legend labels
+        legend.title = element_text(size = 20, face = "bold"),  # Legend title
+        plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+        )
+  })
 }
 
 ### To finalize shiny app we have to combine them into an app
