@@ -33,6 +33,8 @@ cumulative <- intercrop_time |>
   ungroup()
 
 ### PCA Biplot data setup ### 
+library(ggfortify)
+
 # Select out the relevant variables we want to assess for PCA
 intercrop_pca_data <- intercrop |>
   select(LER_tot_calc,Crop_1_Common_Name,Crop_2_Common_Name,
