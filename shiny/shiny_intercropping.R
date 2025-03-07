@@ -16,7 +16,7 @@ intercrop <- intercrop|>
   mutate(start_year = as.numeric(str_extract(intercrop$Experiment_period, "^[0-9]{4}")))|>
   mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$")))
 
-### Adding in different dataframes for plots ### 
+### TAB 1: Experiments over time data setup ### 
 # Take only the time and country for Widget 1
 intercrop_time <- intercrop |>
   janitor::clean_names() |>
@@ -32,7 +32,17 @@ cumulative <- intercrop_time |>
   mutate(cumulative_experiments = cumsum(count)) |>
   ungroup()
 
-### PCA Biplot data setup ### 
+
+### TAB 2: LER plots data setup ###
+intercrop_LER <- intercrop |>
+  select('Country', 'Continent', 'end_year', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
+  janitor::clean_names() |>
+  rename(crop1 = crop_1_common_name, crop2 = crop_2_common_name, year = end_year) |>
+  mutate(intercropping_pattern = as.factor(intercropping_pattern)) |>
+  mutate(country = as.factor(country))
+
+
+### TAB 3: PCA Biplot data setup ### 
 library(ggfortify)
 
 # Select out the relevant variables we want to assess for PCA
@@ -68,23 +78,28 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
 
 
 
-### LER plots data setup ###
-intercrop_LER <- intercrop |>
-  select('Country', 'Continent', 'end_year', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
-  janitor::clean_names() |>
-  rename(crop1 = crop_1_common_name, crop2 = crop_2_common_name, year = end_year) |>
-  mutate(intercropping_pattern = as.factor(intercropping_pattern)) |>
-  mutate(country = as.factor(country))
-
-
-
 ### create the user interface ### 
-ui <- fluidPage(
+ui <- page_fluid(
   navbarPage(
     'Exploring Intercropping Experiments',
     # Add in theme
     theme = bs_theme(bootswatch = "sandstone"),
     
+    ### About Tab ### 
+    tabPanel("About",
+             
+             layout_columns(  
+               card(tags$b('Intro to Intercropping')),  
+               card(tags$b("Graphics")),
+               card(tags$b("Widgets overview"),
+                    tags$i("Widget 1:"), "Explore intercropping yield by continent.", tags$br(),
+                    tags$i("Widget 2:"), "Compares the LER of different crop types.", tags$br(),
+                    tags$i("Widget 3:"), "Displays a biplot of a PCA, demonstrating the relatedness and effect of each variable"),
+               col_widths = c(4, 8, 4)
+             )
+    ),
+        
+    ### Tab 1 ###
     # Add the option to select the continent
     tabPanel("Intercropping Yield by Continent",
              titlePanel("Cumulative Experiments Over Time by Continent"),
@@ -108,6 +123,7 @@ ui <- fluidPage(
              )
     ),
     
+    ### Tab 2 ###
     tabPanel("LER by Crop Types",
              sidebarLayout(
                sidebarPanel(
@@ -130,6 +146,7 @@ ui <- fluidPage(
              )
     ),
     
+    ### Tab 3 ###
     tabPanel("PCA Biplot", 
              # Place for the chart
              plotOutput("PCA_plot")
@@ -187,7 +204,6 @@ server<-function(input,output, session){
   })
   
   #### Tab 2: LER plots ####
-  
   observe({
     # Get valid crop2 choices for default crop1 (Maize)
     initial_choices <- unique(intercrop_LER |>
