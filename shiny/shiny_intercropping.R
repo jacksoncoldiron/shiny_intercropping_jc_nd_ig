@@ -141,7 +141,8 @@ ui <- page_fluid(
                  )
                ),
                mainPanel(
-                 plotOutput('LER_plot')
+                 plotOutput('LER_plot'), 
+                 plotOutput('crop1_exp_over_time_plot')
                )
              )
     ),
@@ -205,15 +206,17 @@ server<-function(input,output, session){
   
   #### Tab 2: LER plots ####
   observe({
+    req(intercrop_LER)
     # Get valid crop2 choices for default crop1 (Maize)
     initial_choices <- unique(intercrop_LER |>
                                 filter(crop1 == "Maize") |>
                                 pull(crop2))
     
     updateSelectInput(session, "crop2_type",
-                      choices = initial_choices,
-                      selected = "Cowpea")
+                      selected = "Cowpea",
+                      choices = initial_choices)
   })
+  
   
   # Update crop2 choices dynamically based on crop1 selection
   observeEvent(input$crop1_type, {
@@ -249,6 +252,53 @@ server<-function(input,output, session){
         legend.title = element_text(size = 20, face = "bold"),  # Legend title
         plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
         )
+  })
+  
+  # set up data for cumulative experiments by crop 
+  # find top 10 crop2s based on crop1
+  crop2_top <- reactive({
+    intercrop_LER |>
+    filter(crop1 == input$crop1_type)|>
+    group_by(crop2)|>
+    summarize(n = n())|>
+    arrange(desc(n))|>
+    slice(1:10)|>
+    pull(crop2)
+  })
+  
+  # big pipe op that filters to just crop1 and top crop2, 
+  # groups by crop1 and 2, 
+  # counts how many experiments are in a given year, groups by crop2, 
+  # calculate cumulative sum as the years go on, 
+  # and finally makes crop2 a factor with levels ordered by cumulative count and label with n=cumulative count
+  # for plotting purposes
+  crop1_crops_over_time <- reactive({
+    intercrop_LER |>
+    select(c(crop1, crop2, year)) |>
+    filter(crop1 == input$crop1_type, crop2 %in% crop2_top())|>
+    drop_na() |>
+    group_by(year, crop1, crop2) |>
+    summarise(count = n(), .groups = "drop") |>
+    group_by(crop2) |>
+    mutate(cumulative_count = cumsum(count), 
+           total_cumulative = max(cumulative_count)) |>
+    mutate(crop2 = factor(crop2, 
+                          levels = crop2,  # Order by cumulative count
+                          labels = paste0(crop2, " (n=", total_cumulative, ")"))) # Add count to label
+  })
+  
+  
+  # Plot experiments over time based of crop1
+  output$crop1_exp_over_time_plot <- renderPlot({
+    ggplot(data = crop1_crops_over_time(), aes(x = year, y = cumulative_count, color = crop2))+
+      geom_point()+
+      geom_line()+
+      labs(x = 'Year', 
+           y = 'Cumulative experiment count', 
+           color = 'Crop 2 type')+
+      theme_bw()
+    
+    
   })
 }
 

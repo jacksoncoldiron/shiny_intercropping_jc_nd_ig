@@ -24,24 +24,27 @@ library(here)
 
 ```{r}
 
-intercrop_raw <- read_delim(delim = ';', here("data", "Database.csv"))
+### load data ###  
+intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
-intercrop <- intercrop_raw |>
-  select('Country', 'Latitude', 'Longitude', 'Continent', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
-  clean_names() |>
-  rename(crop1 = crop_1_common_name, crop2 = crop_2_common_name) 
+### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
+intercrop$Yield_total_intercropping <- as.numeric(gsub(",", ".", intercrop$Yield_total_intercropping))
+intercrop$LER_tot <- as.numeric(gsub(",", ".", intercrop$LER_tot))
+intercrop$LER_crop1 <- as.numeric(gsub(",", ".", intercrop$LER_crop1))
+intercrop$LER_crop2 <- as.numeric(gsub(",", ".", intercrop$LER_crop2))
 
-### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period
+intercrop <- intercrop|>
+  mutate(start_year = as.numeric(str_extract(intercrop$Experiment_period, "^[0-9]{4}")))|>
+  mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$")))
 
-intercrop$latitude <- as.numeric(gsub(",", ".", intercrop$latitude))
-intercrop$longitude <- as.numeric(gsub(",", ".", intercrop$longitude))
 
-intercrop$ler_tot <- as.numeric(gsub(",", ".", intercrop$ler_tot))
-intercrop$ler_crop1 <- as.numeric(gsub(",", ".", intercrop$ler_crop1))
-intercrop$ler_crop2 <- as.numeric(gsub(",", ".", intercrop$ler_crop2))
-
-# Change experiment year to just the earliest year
-intercrop$experiment_year <- substr(intercrop$experiment_year, length(intercrop$experiment_year)-3, length(intercrop$experiment_year))
+### TAB 2: LER plots data setup ###
+intercrop_LER <- intercrop |>
+  select('Country', 'Continent', 'end_year', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
+  janitor::clean_names() |>
+  rename(crop1 = crop_1_common_name, crop2 = crop_2_common_name, year = end_year) |>
+  mutate(intercropping_pattern = as.factor(intercropping_pattern)) |>
+  mutate(country = as.factor(country))
 
 ```
 
@@ -98,14 +101,16 @@ crop_1_intercrop <- intercrop|>
   drop_na(ler_crop1)
 
 
-crop2_freq <- crop_1_intercrop |>
+crop2_top10 <- crop_1_intercrop |>
   group_by(crop2)|>
   summarize(n = n())|>
   arrange(desc(n))|>
   slice(1:10)
 
-ggplot(crop_1_intercrop |> filter(crop2 %in% crop2_freq$crop2), aes(x = crop2))+
-  geom_bar()
+ggplot(crop_1_intercrop |> filter(crop2 %in% crop2_top10$crop2)|> drop_na(ler_crop1, ler_crop2), aes(x = end_year, color = crop2))+
+  line()+
+  theme_bw()+
+  labs(x = 'Year', y = 'Cumulative experiment count', color = 'Crop 2 type', title = 'Frequency of experiments with complementary crops')
 ```
 
 ### Plot Maize vs Bean LER comparison
@@ -164,4 +169,84 @@ ggplot()+
   theme_bw()
 
   
+```
+
+## Line plot of crop 1 experiments with different crops over time
+
+```{r}
+
+
+crop1_select = 'Maize'
+
+# find top 10 crop2s based on crop1
+crop2_top <- intercrop_LER |>
+  filter(crop1 == crop1_select)|>
+  group_by(crop2)|>
+  summarize(n = n())|>
+  arrange(desc(n))|>
+  slice(1:10)|>
+  pull(crop2)
+
+# set up data for cumulative experiments by crop 
+intercrop_time_crops <- intercrop_LER |>
+  select(c(crop1, crop2, year)) |>
+  filter(crop1 == crop1_select, crop2 %in% crop2_top)|>
+  drop_na() |>
+  group_by(year, crop1, crop2) |>
+  summarise(count = n(), .groups = "drop") |>
+  arrange(year, crop2)
+
+cumulative_exps_by_crop <- intercrop_time_crops |>
+  group_by(crop1, crop2) |>
+  mutate(cumulative_experiments = cumsum(count))
+
+# Calculate final cumulative experiment count per crop2
+final_cumulative_counts <- cumulative_exps_by_crop |>
+  group_by(crop2) |>
+  summarise(total_cumulative = max(cumulative_experiments, na.rm = TRUE), .groups = "drop") |>
+  arrange(desc(total_cumulative))  # Order by highest count
+
+# Merge back into main data
+cumulative_exps_by_crop <- cumulative_exps_by_crop |>
+  left_join(final_cumulative_counts, by = "crop2") |>
+  mutate(crop2 = factor(crop2, 
+                        levels = final_cumulative_counts$crop2,  # Order by cumulative count
+                        labels = paste0(final_cumulative_counts$crop2, " (n=", final_cumulative_counts$total_cumulative, ")"))  # Add count to label
+         )
+
+# combine the above altogether into one pipe op
+cumulative_exps_by_crop2 <- intercrop_time_crops |>
+  group_by(crop1, crop2) |>
+  mutate(cumulative_experiments = cumsum(count), 
+         total_cumulative = max(cumulative_experiments)) |>
+  arrange(desc(total_cumulative)) |> # Order by highest count
+  mutate(crop2 = factor(crop2, 
+                        levels = final_cumulative_counts$crop2,  # Order by cumulative count
+                        labels = paste0(final_cumulative_counts$crop2, # Add count to label
+                                        " (n=", final_cumulative_counts$total_cumulative,
+                                        ")")))
+
+# now really do it all at once
+crop1_crops_over_time <- intercrop_LER |>
+  select(c(crop1, crop2, year)) |>
+  filter(crop1 == crop1_select, crop2 %in% crop2_top)|>
+  drop_na() |>
+  group_by(year, crop1, crop2) |>
+  summarise(count = n(), .groups = "drop") |>
+  group_by(crop2) |>
+  mutate(cumulative_count = cumsum(count), 
+         total_cumulative = max(cumulative_count)) |>
+  arrange(desc(total_cumulative)) |> # Order by highest count to ensure correct order
+  mutate(crop2 = factor(crop2, 
+                        levels = crop2,  # Order by cumulative count explicitly 
+                        labels = paste0(crop2, " (n=", total_cumulative, ")"))) # Add count to label
+
+# Plot
+ggplot(data = crop1_crops_over_time, aes(x = year, y = cumulative_count, color = crop2)) +
+  geom_point() +
+  geom_line() +
+  labs(x = 'Year', 
+       y = 'Cumulative experiment count', 
+       color = 'Crop 2 type') +
+  theme_bw()
 ```
