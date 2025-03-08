@@ -1,6 +1,14 @@
 library(tidyverse)
 library(shiny)
 library(bslib)
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(tidyr)
+library(countrycode)
+library(plotly)
 
 
 ### load data ###  
@@ -14,7 +22,10 @@ intercrop$LER_crop2 <- as.numeric(gsub(",", ".", intercrop$LER_crop2))
 
 intercrop <- intercrop|>
   mutate(start_year = as.numeric(str_extract(intercrop$Experiment_period, "^[0-9]{4}")))|>
-  mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$")))
+  mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$"))) |>
+  mutate(iso3 = countrycode(Country, origin = "country.name", destination = "iso3c")) |>
+  mutate(Country = recode(Country, "Philipines" = "Phillippines"))
+                          
 
 ### TAB 1: Experiments over time data setup ### 
 # Take only the time and country for Widget 1
@@ -31,6 +42,34 @@ cumulative <- intercrop_time |>
   group_by(continent) |>
   mutate(cumulative_experiments = cumsum(count)) |>
   ungroup()
+
+# Build the data for the map
+aggregate2 <- intercrop_time |>
+  group_by(country, year) |>
+  summarize(year_count_continent = sum(count), .groups = "drop") |>
+  drop_na()
+
+agg_noyear <- aggregate2 |>
+  group_by(country) |>
+  summarize(count = sum(year_count_continent), .groups = "drop")
+
+# Load world map
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Convert country names to match map
+intercrop <- intercrop |>
+  mutate(iso3 = countrycode(Country, origin = "country.name", destination = "iso3c"))
+intercrop <- intercrop |> filter(!is.na(iso3))
+
+# Aggregate experiment count per country
+agg_noyear <- intercrop |>
+  group_by(iso3) |>
+  summarise(count = n(), .groups = "drop")
+
+# Merge with world map
+map_data2 <- world |>
+  left_join(agg_noyear, by = c("iso_a3" = "iso3")) |>
+  mutate(count = replace_na(count, 0))
 
 
 ### TAB 2: LER plots data setup ###
@@ -107,18 +146,29 @@ ui <- page_fluid(
                sidebarPanel(
                  checkboxGroupInput("continent", "Select Continents:",
                                     choices = unique(cumulative$continent),
-                                    selected = unique(cumulative$continent))
+                                    selected = unique(cumulative$continent)),
+                 # Add in the title for the map and interactive prompt
+                 hr(),
+                 h4("Click a country to see details"),
+                 tableOutput("country_info")
                ),
                
                # Plotting the cumulative experiments over time
                mainPanel(
-                 plotOutput("plotCumulative"),
-                 sliderInput("yearRange", "Select Year Range:",
-                             min = min(cumulative$year),
-                             max = max(cumulative$year),
-                             value = c(min(cumulative$year), max(cumulative$year)),
-                             step = 1,
-                             sep = "")
+                 fluidRow(
+                   column(12, plotOutput("plotCumulative")),
+                   column(12, sliderInput("yearRange", "Select Year Range:",
+                                          min = min(cumulative$year),
+                                          max = max(cumulative$year),
+                                          value = c(min(cumulative$year), max(cumulative$year)),
+                                          step = 1,
+                                          sep = ""))
+                 ),
+                 # Add in the map
+                 hr(),
+                 fluidRow(
+                   column(12, plotlyOutput("interactive_map"))
+                 )
                )
              )
     ),
@@ -158,7 +208,9 @@ ui <- page_fluid(
 
 ### create the server function (where all the magic happens from data analysis) ### 
 # Year range slider for user to select the year range
-server<-function(input,output, session){
+server <- function(input,output, session){
+  
+  ### Tab 1: Experiments Overview ###
   filteredData <- reactive({
     cumulative |>
       filter(year >= input$yearRange[1],
@@ -179,7 +231,64 @@ server<-function(input,output, session){
            title = paste("Cumulative Experiments Over Time in", input$continent))
   })
   
-  intercrop_sum_table<-reactive({
+  # Interactive Map
+  output$interactive_map <- renderPlotly({
+    p <- ggplot(map_data2) +
+      geom_sf(aes(fill = count), color = "gray40") +
+      scale_fill_viridis_c(option = "viridis", name = "Experiments", na.value = "white") +
+      theme_minimal() +
+      labs(title = "Experiments by Country", x = "", y  = "")
+    
+    ggplotly(p) |>
+      event_register("plotly_click")
+  })
+  
+  # Display country info
+  output$country_info <- renderTable({
+    click <- event_data("plotly_click")
+    if (is.null(click) || is.null(click$key)) return(NULL)
+    
+    clicked_country <- click$key
+    print(paste("Clicked country:", clicked_country))
+    
+    if (!clicked_country %in% intercrop$iso3) {
+      print("Warning: Clicked country not found in dataset!")
+      return(NULL)
+      }
+    
+    country_data <- intercrop |>
+      filter(iso3 == clicked_country) 
+    
+    if (nrow(country_data) == 0) {
+      return(NULL)
+    }
+        
+    total_experiments <- nrow(country_data)
+    
+    common_crop <- country_data |>
+      select(Crop_1_Common_Name, Crop_2_Common_Name) |>
+      pivot_longer(cols = everything(), values_to = "crop") |>
+      filter(!is.na(crop)) |>
+      count(crop, sort = TRUE) |>
+      slice_head(n = 1) |>
+      pull(crop) 
+    
+    common_pattern <- country_data |>
+      filter(!is.na(Intercropping_pattern)) |>
+      slice_head(n = 1) |>
+      pull(Intercropping_pattern)
+    
+    data.frame(
+      Country = unique(country_data$Country),
+      Experiments = total_experiments,
+      Most_Common_Crop = common_crop,
+      Most_Common_Pattern = common_pattern)
+    
+  })
+  
+###########################################################
+ 
+   intercrop_sum_table<-reactive({
     intercrop_summary_df<-intercrop |>
       filter(Continent==input$Continent_type)|>
       group_by(start_year)|>
@@ -203,6 +312,8 @@ server<-function(input,output, session){
     ) +
       theme_minimal()
   })
+  
+ 
   
   #### Tab 2: LER plots ####
   observe({
