@@ -140,19 +140,16 @@ ui <- page_fluid(
         
     ### Tab 1 ###
     # Add the option to select the continent
-    tabPanel("Intercropping Yield by Continent",
-             titlePanel("Cumulative Experiments Over Time by Continent"),
+    tabPanel("Intercropping by Continent",
+             titlePanel("Experiments by Continent"),
              sidebarLayout(
                sidebarPanel(
-                 checkboxGroupInput("continent", "Select Continents:",
+                 checkboxGroupInput("", "Select Continents:",
                                     choices = unique(cumulative$continent),
                                     selected = unique(cumulative$continent)),
-                 # Add in the title for the map and interactive prompt
-                 hr(),
-                 h4("Click a country to see details"),
-                 tableOutput("country_info")
+            
                ),
-               
+          
                # Plotting the cumulative experiments over time
                mainPanel(
                  fluidRow(
@@ -163,15 +160,27 @@ ui <- page_fluid(
                                           value = c(min(cumulative$year), max(cumulative$year)),
                                           step = 1,
                                           sep = ""))
-                 ),
-                 # Add in the map
-                 hr(),
-                 fluidRow(
-                   column(12, plotlyOutput("interactive_map"))
                  )
+                )
+              )
+  ),
+    
+  ### Tab 1A ###
+  # Input map
+    tabPanel("Experiments by Country",
+             titlePanel("Click a Country to Learn More"),
+             sidebarLayout(
+               sidebarPanel(
+                 tableOutput("country_info")
+                 ),
+               mainPanel(
+               fluidRow(
+                 column(12, plotlyOutput("interactive_map"))
                )
-             )
+              )
+            )
     ),
+            
     
     ### Tab 2 ###
     tabPanel("LER by Crop Types",
@@ -206,6 +215,7 @@ ui <- page_fluid(
 )
 
 
+
 ### create the server function (where all the magic happens from data analysis) ### 
 # Year range slider for user to select the year range
 server <- function(input,output, session){
@@ -231,7 +241,7 @@ server <- function(input,output, session){
            title = paste("Cumulative Experiments Over Time in", input$continent))
   })
   
-  # Interactive Map
+  # Tab 1A: Interactive Map
   output$interactive_map <- renderPlotly({
     p <- ggplot(map_data2) +
       geom_sf(aes(fill = count), color = "gray40") +
@@ -246,15 +256,47 @@ server <- function(input,output, session){
   # Display country info
   output$country_info <- renderTable({
     click <- event_data("plotly_click")
-    if (is.null(click) || is.null(click$key)) return(NULL)
     
-    clicked_country <- click$key
-    print(paste("Clicked country:", clicked_country))
+    print(click)
     
+    # Check if click data is valid
+    if (is.null(click) || !("x" %in% names(click)) || !("y" %in% names(click))) {
+      print("No country selected")
+      return(NULL)
+    }
+    
+    clicked_long <- click$x  # Extract longitude
+    clicked_lat <- click$y   # Extract latitude
+    
+    print(paste("Clicked coordinates: ", clicked_long, clicked_lat))
+    
+    # Ensure correct CRS
+    if (st_crs(map_data2)$epsg != 4326) {
+      map_data2 <- st_transform(map_data2, crs = 4326)
+    }
+    
+    
+    # Find the Country Name from Coordinates
+    clicked_point <- st_sfc(st_point(c(clicked_long, clicked_lat)), crs = 4326)
+    nearest_country_index <- tryCatch(
+      st_nearest_feature(clicked_point, map_data2),
+      error = function(e) NA)
+    
+    # Check if a valid country was found
+    if (is.na(nearest_country_index) || nearest_country_index > nrow(map_data2)) {
+      print("Warning: No country found for clicked location!")
+      return(NULL)
+    }
+    
+    clicked_country <- map_data2$iso_a3[nearest_country_index]
+    
+    print(paste("Matched country:", clicked_country))
+    
+    # Check if the country exists in the dataset
     if (!clicked_country %in% intercrop$iso3) {
       print("Warning: Clicked country not found in dataset!")
       return(NULL)
-      }
+    }
     
     country_data <- intercrop |>
       filter(iso3 == clicked_country) 
@@ -277,6 +319,8 @@ server <- function(input,output, session){
       filter(!is.na(Intercropping_pattern)) |>
       slice_head(n = 1) |>
       pull(Intercropping_pattern)
+    
+    # Return the updated table
     
     data.frame(
       Country = unique(country_data$Country),
