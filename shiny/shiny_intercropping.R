@@ -9,10 +9,11 @@ library(rnaturalearthdata)
 library(tidyr)
 library(countrycode)
 library(plotly)
+library(viridis)
 
 
 
-### load data ###  
+### loadviridis### load data ###  
 intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
 ### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
@@ -384,6 +385,7 @@ server <- function(input,output, session){
              loadings.label.colour = "black",
              loadings.label.vjust = -0.5
     ) +
+      scale_color_viridis(discrete = TRUE) +   # Apply the Viridis color palette
       theme_minimal()
   })
   
