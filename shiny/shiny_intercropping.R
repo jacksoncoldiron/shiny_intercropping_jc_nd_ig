@@ -11,6 +11,7 @@ library(countrycode)
 library(plotly)
 
 
+
 ### load data ###  
 intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
@@ -25,7 +26,22 @@ intercrop <- intercrop|>
   mutate(end_year = as.numeric(str_extract(intercrop$Experiment_period, "[0-9]{4}$"))) |>
   mutate(iso3 = countrycode(Country, origin = "country.name", destination = "iso3c")) |>
   mutate(Country = recode(Country, "Philipines" = "Phillippines"))
-                          
+
+### Custom Theme ###
+sandstone_theme <- bs_theme(bootswatch = "sandstone") |>
+  bs_theme_update(
+  bg = "#2E8B57",           # Light beige background
+  fg = "#3E3E3E",           # Dark gray text
+  primary = "#8B5E3C",      # Warm brown primary color
+  secondary = "#D2B48C",    # Tan secondary color
+  success = "#4CAF50",      # Green for success messages
+  info = "#2E8B57",         # Sea green for informational messages
+  warning = "#E9967A",      # Light coral for warnings
+  danger = "#A52A2A",       # Brownish-red for danger alerts
+  base_font = font_google("Signika"),  
+  heading_font = font_google("Crete Round"), 
+  font_scale = 1.1  
+)
 
 ### TAB 1: Experiments over time data setup ### 
 # Take only the time and country for Widget 1
@@ -122,7 +138,7 @@ ui <- page_fluid(
   navbarPage(
     'Exploring Intercropping Experiments',
     # Add in theme
-    theme = bs_theme(bootswatch = "sandstone"),
+    theme = sandstone_theme,
     
     ### About Tab ### 
     tabPanel("About",
@@ -141,10 +157,11 @@ ui <- page_fluid(
     ### Tab 1 ###
     # Add the option to select the continent
     tabPanel("Intercropping by Continent",
-             titlePanel("Experiments by Continent"),
+             titlePanel("Experiments over time for Continents of your choosing!"),
              sidebarLayout(
+               position = "right",
                sidebarPanel(
-                 checkboxGroupInput("", "Select Continents:",
+                 checkboxGroupInput("continent", "Select Continents:",
                                     choices = unique(cumulative$continent),
                                     selected = unique(cumulative$continent)),
             
@@ -154,12 +171,14 @@ ui <- page_fluid(
                mainPanel(
                  fluidRow(
                    column(12, plotOutput("plotCumulative")),
-                   column(12, sliderInput("yearRange", "Select Year Range:",
+                   column(8, offset = 1, 
+                          sliderInput("yearRange", "Select Year Range:",
                                           min = min(cumulative$year),
                                           max = max(cumulative$year),
                                           value = c(min(cumulative$year), max(cumulative$year)),
                                           step = 1,
-                                          sep = ""))
+                                          sep = "",
+                                          width = "100%"))
                  )
                 )
               )
@@ -168,12 +187,14 @@ ui <- page_fluid(
   ### Tab 1A ###
   # Input map
     tabPanel("Experiments by Country",
-             titlePanel("Click a Country to Learn More"),
+             titlePanel(""),
              sidebarLayout(
+               position = "right",
                sidebarPanel(
-                 tableOutput("country_info")
+                 uiOutput("country_info")
                  ),
                mainPanel(
+                 titlePanel("Click a Country to learn more!"),
                fluidRow(
                  column(12, plotlyOutput("interactive_map"))
                )
@@ -237,24 +258,30 @@ server <- function(input,output, session){
       theme_classic() +
       scale_color_viridis_d(option = "viridis") +
       labs(x = "Year", 
-           y = "Cumulative Experiments", 
-           title = paste("Cumulative Experiments Over Time in", input$continent))
+           y = "Cumulative Experiments",
+           color = NULL)
+    
   })
   
-  # Tab 1A: Interactive Map
+  ### Tab 1A: Interactive Map ###
   output$interactive_map <- renderPlotly({
     p <- ggplot(map_data2) +
       geom_sf(aes(fill = count), color = "gray40") +
-      scale_fill_viridis_c(option = "viridis", name = "Experiments", na.value = "white") +
+      scale_fill_gradientn(
+        colours = c("grey90", viridisLite::viridis(5)),
+        values = scales::rescale(c(0, 1, max(map_data2$count, na.rm = TRUE))),
+        limits = c(0, max(map_data2$count, na.rm = TRUE)),
+        name = ""
+      ) +
       theme_minimal() +
-      labs(title = "Experiments by Country", x = "", y  = "")
+      labs(title = "", x = "", y  = "")
     
     ggplotly(p) |>
       event_register("plotly_click")
   })
   
   # Display country info
-  output$country_info <- renderTable({
+  output$country_info <- renderUI({
     click <- event_data("plotly_click")
     
     print(click)
@@ -317,16 +344,19 @@ server <- function(input,output, session){
     
     common_pattern <- country_data |>
       filter(!is.na(Intercropping_pattern)) |>
+      count(Intercropping_pattern, sort = TRUE) |>
       slice_head(n = 1) |>
       pull(Intercropping_pattern)
     
     # Return the updated table
     
-    data.frame(
-      Country = unique(country_data$Country),
-      Experiments = total_experiments,
-      Most_Common_Crop = common_crop,
-      Most_Common_Pattern = common_pattern)
+    tagList(
+      h4(""),
+      tags$p(strong("Country: "), unique(country_data$Country)),
+      tags$p(strong("Experiments: "), total_experiments),
+      tags$p(strong("Top Crop: "), common_crop),
+      tags$p(strong("Top Pattern: "), common_pattern)
+    )
     
   })
   
