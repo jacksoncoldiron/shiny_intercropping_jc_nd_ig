@@ -44,6 +44,12 @@ sandstone_theme <- bs_theme(bootswatch = "sandstone") |>
   font_scale = 1.1  
 )
 
+### Declare global plot variables
+text_size <- 20
+point_size <- 3
+
+# Using theme_classic
+
 ### TAB 1: Experiments over time data setup ### 
 # Take only the time and country for Widget 1
 intercrop_time <- intercrop |>
@@ -438,13 +444,13 @@ server <- function(input,output, session){
       #xlim(0,1.25)+
       #ylim(0,1.25)+
       labs(x = paste0(input$crop1_type, ' LER'), y = paste0(input$crop2_type, ' LER'), color = 'Country')+
-      theme_bw()+
+      theme_classic()+
       theme(
-        text = element_text(size = 20),              # Change all text size
-        axis.text = element_text(size = 20),         # Axis tick labels
-        axis.title = element_text(size = 20),        # Axis titles
-        legend.text = element_text(size = 20),       # Legend labels
-        legend.title = element_text(size = 20, face = "bold"),  # Legend title
+        text = element_text(size = text_size),              # Change all text size
+        axis.text = element_text(size = text_size),         # Axis tick labels
+        axis.title = element_text(size = text_size),        # Axis titles
+        legend.text = element_text(size = text_size),       # Legend labels
+        legend.title = element_text(size = text_size, face = "bold"),  # Legend title
         plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
         )
   })
@@ -491,7 +497,7 @@ server <- function(input,output, session){
       labs(x = 'Year', 
            y = 'Cumulative experiment count', 
            color = 'Crop 2 type')+
-      theme_bw()
+      theme_classoic()
     
     
   })

@@ -51,43 +51,39 @@ intercrop_LER <- intercrop |>
 ## Explore data
 
 ```{r}
-unique(intercrop$crop1)
-unique(intercrop$crop2)
+unique(intercrop_LER$crop1)
+unique(intercrop_LER$crop2)
 
-crop1_freq <- intercrop |>
+crop1_freq <- intercrop_LER |>
   group_by(crop1)|>
   summarize(n = n())|>
   arrange(desc(n))|>
   slice(1:15)
 
-ggplot(intercrop |> filter(crop1 %in% crop1_freq$crop1), aes(x = crop1))+
+ggplot(intercrop_LER |> filter(crop1 %in% crop1_freq$crop1), aes(x = crop1))+
   geom_bar()
 
-crop2_freq <- intercrop |>
+crop2_freq <- intercrop_LER |>
   group_by(crop2)|>
   summarize(n = n())|>
   arrange(desc(n))|>
   slice(1:15)
 
-ggplot(intercrop |> filter(crop2 %in% crop2_freq$crop2), aes(x = crop2))+
+ggplot(intercrop_LER |> filter(crop2 %in% crop2_freq$crop2), aes(x = crop2))+
   geom_bar()
 
-intercrop_top <- intercrop|>
+intercrop_LER_top <- intercrop_LER|>
   filter(crop1 %in% crop1_freq$crop1)
 
-unique(intercrop_top$crop1)
-unique(intercrop_top$crop2)
+unique(intercrop_LER_top$crop1)
+unique(intercrop_LER_top$crop2)
 
 # Find overlap between crop1 name and crop2 name
-unique(intercrop_top$crop1)[(unique(intercrop_top$crop1) %in% unique(intercrop_top$crop2))]
+unique(intercrop_LER_top$crop1)[(unique(intercrop_LER_top$crop1) %in% unique(intercrop_LER_top$crop2))]
 
-common_crops <- intersect(intercrop_top$crop1, intercrop_top$crop2)
+common_crops <- intersect(intercrop_LER_top$crop1, intercrop_LER_top$crop2)
 
 length(common_crops)
-
-
-
-
 ```
 
 ### Look at Maize
@@ -96,21 +92,22 @@ length(common_crops)
 
 crop_1 <- 'Maize'
 
-crop_1_intercrop <- intercrop|>
+crop_1_intercrop_LER <- intercrop_LER|>
   filter(crop1 == crop_1)|>
   drop_na(ler_crop1)
 
 
-crop2_top10 <- crop_1_intercrop |>
+crop2_top10 <- crop_1_intercrop_LER |>
   group_by(crop2)|>
   summarize(n = n())|>
   arrange(desc(n))|>
   slice(1:10)
 
-ggplot(crop_1_intercrop |> filter(crop2 %in% crop2_top10$crop2)|> drop_na(ler_crop1, ler_crop2), aes(x = end_year, color = crop2))+
-  line()+
-  theme_bw()+
-  labs(x = 'Year', y = 'Cumulative experiment count', color = 'Crop 2 type', title = 'Frequency of experiments with complementary crops')
+# ggplot(crop_1_intercrop_LER |> filter(crop2 %in% crop2_top10$crop2)|> drop_na(ler_crop1, ler_crop2), 
+#        aes(x = year, color = crop2))+
+#   geom_line()+
+#   theme_bw()+
+#   labs(x = 'Year', y = 'Cumulative experiment count', color = 'Crop 2 type', title = 'Frequency of experiments with complementary crops')
 ```
 
 ### Plot Maize vs Bean LER comparison
@@ -121,10 +118,10 @@ ggplot(crop_1_intercrop |> filter(crop2 %in% crop2_top10$crop2)|> drop_na(ler_cr
 crop_1 <- 'Maize'
 crop_2 <- 'Bean'
 
-crop_1_intercrop <- intercrop|>
+crop_1_intercrop_LER <- intercrop_LER|>
   filter(crop1 == crop_1)
 
-crop_12 <- crop_1_intercrop |>
+crop_12 <- crop_1_intercrop_LER |>
   filter(crop2 == crop_2)|>
   drop_na(ler_crop1, ler_crop2)
 
@@ -155,11 +152,11 @@ crop_2c <- 'Maize' #Cucumber Lettuce Wheat Maize Cowpea Bean
 legend_vec <- c(paste(crop_1a, "and", crop_2a), paste(crop_1b, "and", crop_2b), paste(crop_1c, "and", crop_2c))
 
 ggplot()+
-  geom_point(data = intercrop|> filter(crop1 == crop_1a, crop2 == crop_2a) |> drop_na(ler_crop1, ler_crop2),
+  geom_point(data = intercrop_LER|> filter(crop1 == crop_1a, crop2 == crop_2a) |> drop_na(ler_crop1, ler_crop2),
              aes(x=ler_crop1, y = ler_crop2, color = , color=legend_vec[1], shape = intercropping_pattern))+
-  geom_point(data = intercrop|> filter(crop1 == crop_1b, crop2 == crop_2b) |> drop_na(ler_crop1, ler_crop2),
+  geom_point(data = intercrop_LER|> filter(crop1 == crop_1b, crop2 == crop_2b) |> drop_na(ler_crop1, ler_crop2),
              aes(x=ler_crop1, y = ler_crop2, color=, color=legend_vec[2], shape = intercropping_pattern))+
-  geom_point(data = intercrop|> filter(crop1 == crop_1c, crop2 == crop_2c) |> drop_na(ler_crop1, ler_crop2),
+  geom_point(data = intercrop_LER|> filter(crop1 == crop_1c, crop2 == crop_2c) |> drop_na(ler_crop1, ler_crop2),
              aes(x=ler_crop1, y = ler_crop2, color=legend_vec[3], shape = intercropping_pattern))+
   geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
              linetype = "dashed", color = "black") +
@@ -167,7 +164,6 @@ ggplot()+
   #ylim(0,1.25)+
   labs(x = "crop 1 LER", y = "crop 2 LER", color = "crop combination") + 
   theme_bw()
-
   
 ```
 
@@ -188,7 +184,7 @@ crop2_top <- intercrop_LER |>
   pull(crop2)
 
 # set up data for cumulative experiments by crop 
-intercrop_time_crops <- intercrop_LER |>
+intercrop_LER_time_crops <- intercrop_LER |>
   select(c(crop1, crop2, year)) |>
   filter(crop1 == crop1_select, crop2 %in% crop2_top)|>
   drop_na() |>
@@ -196,7 +192,7 @@ intercrop_time_crops <- intercrop_LER |>
   summarise(count = n(), .groups = "drop") |>
   arrange(year, crop2)
 
-cumulative_exps_by_crop <- intercrop_time_crops |>
+cumulative_exps_by_crop <- intercrop_LER_time_crops |>
   group_by(crop1, crop2) |>
   mutate(cumulative_experiments = cumsum(count))
 
@@ -215,7 +211,7 @@ cumulative_exps_by_crop <- cumulative_exps_by_crop |>
          )
 
 # combine the above altogether into one pipe op
-cumulative_exps_by_crop2 <- intercrop_time_crops |>
+cumulative_exps_by_crop2 <- intercrop_LER_time_crops |>
   group_by(crop1, crop2) |>
   mutate(cumulative_experiments = cumsum(count), 
          total_cumulative = max(cumulative_experiments)) |>
