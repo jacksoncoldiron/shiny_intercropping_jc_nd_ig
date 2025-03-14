@@ -73,11 +73,38 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
   prcomp(scale.=TRUE)
 
 # See Loadings for each PC
-# intercrop_pca_scale$rotation
+intercrop_pca_scale$rotation
 
 # Scree Plot to assess variance explained by each PC
 screeplot(intercrop_pca_scale,type="lines")
 screeplot(intercrop_pca_scale,type="barplot")
+
+# % Variance Explained
+pc_names <- colnames(intercrop_pca_scale$rotation)
+sd_vec <- intercrop_pca_scale$sdev
+var_vec <- sd_vec^2 ### standard deviation is sqrt of variance!
+
+
+pct_expl_df <- data.frame(v = var_vec,
+                          pct_v = var_vec / sum(var_vec),
+                          pc = pc_names)
+
+pct_expl_df<-pct_expl_df|>
+  arrange(desc(pct_v))|>
+  head(6) 
+
+# Screeplot
+ggplot(pct_expl_df, aes(x=reorder(pc,-pct_v), y = pct_v)) +
+  geom_col() +
+  labs(x = 'Principal component', y = 'Variance explained')+
+  scale_y_continuous(labels = scales::percent,expand = c(0,0))
+
+# Showing another way where we add the percentage explained as labels
+ggplot(pct_expl_df, aes(x = pc, y = v)) +
+  geom_col() +
+  geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
+  labs(x = 'Principal component', y = 'Variance explained')
+
 
 
 # Plot a PCA
@@ -89,6 +116,6 @@ PCA_plot<-autoplot(intercrop_pca_scale,
          loadings.colour = "black",
          loadings.label.colour = "black",
          loadings.label.vjust = -0.5
-) +
+) + 
   theme_minimal()
 

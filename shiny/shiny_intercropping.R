@@ -108,9 +108,9 @@ intercrop_pca_data <- intercrop |>
          Experiment_period,Country,Latitude)|>
   mutate(Year=as.numeric(str_extract(Experiment_period,"(?<=-)\\d{4}$")))|> # Extract end year from experiment period
   mutate(Maize=ifelse(Crop_1_Common_Name=="Maize"|Crop_2_Common_Name=="Maize",1,0))|>
-  mutate(No_Maize=ifelse(!(Crop_1_Common_Name=="Maize"|Crop_2_Common_Name=="Maize"),1,0))|>
+  mutate("No Maize"=ifelse(!(Crop_1_Common_Name=="Maize"|Crop_2_Common_Name=="Maize"),1,0))|>
   mutate(China=ifelse(Country=="China",1,0))|>
-  mutate(Rest_of_world=ifelse(Country!="China",1,0))|>
+  mutate("Rest of World"=ifelse(Country!="China",1,0))|>
   mutate(Additive=ifelse(Intercropping_design=="Additive",1,0))|>
   mutate(Replacement=ifelse(Intercropping_design=="Replacement",1,0))|>
   mutate(Row=ifelse(Intercropping_pattern=="Row",1,0))|>
@@ -229,10 +229,10 @@ ui <- page_fluid(
     ),
     
     ### Tab 3 ###
-    tabPanel("PCA Biplot", 
-             # Place for the chart
-             plotOutput("PCA_plot")
-    )
+      tabPanel("PCA Biplot",
+               plotOutput("PCA_plot"),
+               plotOutput("PCA_var")
+               )
   )
 )
 
@@ -383,12 +383,18 @@ server <- function(input,output, session){
              loadings.label = TRUE,
              loadings.colour = "black",
              loadings.label.colour = "black",
-             loadings.label.vjust = -0.5
+             loadings.label.repel=T
     ) +
       scale_color_viridis(discrete = TRUE) +   # Apply the Viridis color palette
       theme_minimal()
   })
   
+  output$PCA_var<-renderPlot({
+    ggplot(pct_expl_df, aes(x = pc, y = v)) +
+      geom_col() +
+      geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
+      labs(x = 'Principal component', y = 'Variance explained')
+  })
  
   
   #### Tab 2: LER plots ####
