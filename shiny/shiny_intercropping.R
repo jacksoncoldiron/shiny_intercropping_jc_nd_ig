@@ -390,10 +390,12 @@ server <- function(input,output, session){
   })
   
   output$PCA_var<-renderPlot({
-    ggplot(pct_expl_df, aes(x = pc, y = v)) +
+    ggplot(pct_expl_df, aes(x = pc, y = v,fill = v)) +
       geom_col() +
       geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
-      labs(x = 'Principal component', y = 'Variance explained')
+      labs(x = 'Principal component', y = 'Variance explained')+
+      scale_fill_viridis(option = "D")+
+      theme_minimal()
   })
  
   
