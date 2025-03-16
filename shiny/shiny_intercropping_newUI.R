@@ -220,7 +220,7 @@ ui <- (fluidPage(
         tabItem(tabName = "home",
                 
                 # home section
-                includeMarkdown("www/home.md")
+                # includeMarkdown("www/home.md")
                 
         ),
         
