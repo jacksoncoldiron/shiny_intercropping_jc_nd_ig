@@ -162,7 +162,21 @@ pct_expl_df<-pct_expl_df|>
 ui <- (fluidPage(
   
   # load custom stylesheet
-  includeCSS("www/style.css"),
+  #includeCSS("www/style.css"),
+  
+  ### declare css styling ### 
+  tags$head(
+    tags$style(HTML("
+    .padded-text {
+      padding-left: 20px;}"
+                    )
+               ),
+    tags$style(HTML("
+      .sidebar-menu > li > a {
+        font-size: 18px !important;  /* Adjust size as needed */}"
+                    )
+               )
+    ),
   
   # load google analytics script
   # tags$head(includeScript("www/google-analytics-bioNPS.js")),
@@ -176,45 +190,27 @@ ui <- (fluidPage(
   # load page layout
   dashboardPage(
     
-    skin = "green",
+    skin = "blue",
     
-    dashboardHeader(title="Intercropping", titleWidth = 300),
+    dashboardHeader(title="Intercropping Around the World", titleWidth = 320),
     
-    dashboardSidebar(width = 300,
+    dashboardSidebar(width = 320,
                      sidebarMenu(
-                       # HTML(paste0(
-                       #   "<br>",
-                       #   "<a href='https://www.nps.gov/index.htm' target='_blank'><img style = 'display: block; margin-left: auto; margin-right: auto;' src='US-NationalParkService-Logo.svg' width = '186'></a>",
-                       #   "<br>",
-                       #   "<p style = 'text-align: center;'><small><a href='https://www.nps.gov/subjects/hfc/arrowhead-artwork.htm' target='_blank'>NPS logo disclaimer</a></small></p>",
-                       #   "<br>"
-                       # )),
+                       tags$img(src = "corn_wheat.png", width = 300),
+                       tags$p("Image credit: pngtree.com", class = 'padded-text', style = "font-style: italic; font-size: 12px; text-align: left;"),
                        menuItem("Home", tabName = "home", icon = icon("home")),
-                       menuItem("TBD", tabName = "map", icon = icon("thumbtack")),
-                       menuItem("TBD", tabName = "table", icon = icon("table")),
-                       menuItem("TBD", tabName = "tree", icon = icon("random", lib = "glyphicon")),
-                       menuItem("TBD", tabName = "charts", icon = icon("stats", lib = "glyphicon"))
-                       # HTML(paste0(
-                       #   "<br><br><br><br><br><br><br><br><br>",
-                       #   "<table style='margin-left:auto; margin-right:auto;'>",
-                       #   "<tr>",
-                       #   "<td style='padding: 5px;'><a href='https://www.facebook.com/nationalparkservice' target='_blank'><i class='fab fa-facebook-square fa-lg'></i></a></td>",
-                       #   "<td style='padding: 5px;'><a href='https://www.youtube.com/nationalparkservice' target='_blank'><i class='fab fa-youtube fa-lg'></i></a></td>",
-                       #   "<td style='padding: 5px;'><a href='https://www.twitter.com/natlparkservice' target='_blank'><i class='fab fa-twitter fa-lg'></i></a></td>",
-                       #   "<td style='padding: 5px;'><a href='https://www.instagram.com/nationalparkservice' target='_blank'><i class='fab fa-instagram fa-lg'></i></a></td>",
-                       #   "<td style='padding: 5px;'><a href='https://www.flickr.com/nationalparkservice' target='_blank'><i class='fab fa-flickr fa-lg'></i></a></td>",
-                       #   "</tr>",
-                       #   "</table>",
-                       #   "<br>"),
-                       #   HTML(paste0(
-                       #     "<script>",
-                       #     "var today = new Date();",
-                       #     "var yyyy = today.getFullYear();",
-                       #     "</script>",
-                       #     "<p style = 'text-align: center;'><small>&copy; - <a href='https://alessiobenedetti.com' target='_blank'>alessiobenedetti.com</a> - <script>document.write(yyyy);</script></small></p>")
-                       #   ))
+                       menuItem("Intercropping by continent", tabName = "continent", icon = icon("thumbtack")),
+                       menuItem("Experiments by country", tabName = "map", icon = icon("map marked alt")),
+                       menuItem("LER by crop types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
+                       menuItem("Principal Component Analysis", tabName = "pca", icon = icon("stats", lib = "glyphicon")),
+                       tags$p(
+                         tags$br(),
+                         "Developed by",
+                         tags$a(href = "https://www.linkedin.com/in/jackson-coldiron/", "Jackson Coldiron", target = "_blank"), tags$br(),
+                         tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicholas DeStephano", target = "_blank"), tags$br(),
+                         "and", tags$a(href = "https://www.linkedin.com/in/isa-elias/", "Isa Elias", target = "_blank"), tags$br(),
+                         style = "font-style: italic; font-size: 18px; text-align: left; padding-left: 15px;")
                      )
-                     
     ), # end dashboardSidebar
     
     dashboardBody(
@@ -224,11 +220,11 @@ ui <- (fluidPage(
         tabItem(tabName = "home",
                 
                 # home section
-                # includeMarkdown("www/home.md")
+                includeMarkdown("www/home.md")
                 
         ),
         
-        tabItem(tabName = "map",
+        tabItem(tabName = "continent",
                 
                 # parks map section
                 titlePanel("Experiments over time for Continents of your choosing!"),
@@ -263,7 +259,7 @@ ui <- (fluidPage(
                 )                
         ),
         
-        tabItem(tabName = 'table',
+        tabItem(tabName = 'map',
           # species data section
           titlePanel(""),
           sidebarLayout(
@@ -284,7 +280,7 @@ ui <- (fluidPage(
           )          
         ),
         
-        tabItem(tabName = "tree", 
+        tabItem(tabName = "LER_comp", 
             sidebarLayout(
               sidebarPanel(
                 selectInput(
@@ -301,14 +297,16 @@ ui <- (fluidPage(
                 )
               ),
               mainPanel(
-                plotOutput('LER_plot'), 
-                plotOutput('crop1_exp_over_time_plot'),
+                fluidRow(
+                  column(10, offset = 1, plotOutput('LER_plot', width = "100%", height = "500px")), 
+                  column(10, offset = 1, plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px"))
+                ),
                 width = 9
               )
             )   
         ),
         
-        tabItem(tabName = "charts",
+        tabItem(tabName = "pca",
                 plotOutput("PCA_plot"),
                 tags$div(style = "text-align: center; font-size: 14px; margin-top: 10px;", 
                          "Figure X: Principal Component Analysis (PCA) biplot showing the distribution of observations based on the first two principal components (PC1 and PC2). The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component. The percentage of variance explained by PC1 and PC2 is indicated on the axes. [placeholder: This analysis suggests a potential correlation between specific features and groupings in the data.]"),
@@ -546,8 +544,8 @@ server <- function(input,output, session){
         axis.text = element_text(size = text_size),         # Axis tick labels
         axis.title = element_text(size = text_size),        # Axis titles
         legend.text = element_text(size = text_size),       # Legend labels
-        legend.title = element_text(size = text_size, face = "bold"),  # Legend title
-        plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+        legend.title = element_text(size = text_size, face = "bold")  # Legend title
+        # plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
         )+
       scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
   })
@@ -600,8 +598,8 @@ server <- function(input,output, session){
         axis.text = element_text(size = text_size),         # Axis tick labels
         axis.title = element_text(size = text_size),        # Axis titles
         legend.text = element_text(size = text_size),       # Legend labels
-        legend.title = element_text(size = text_size, face = "bold"),  # Legend title
-        plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+        legend.title = element_text(size = text_size, face = "bold")  # Legend title
+        #plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
       )+
       scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
   })

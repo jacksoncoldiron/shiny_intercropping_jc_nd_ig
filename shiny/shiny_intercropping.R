@@ -187,6 +187,9 @@ ui <- page_fluid(
              
              layout_columns(  
                card(tags$b('What is intercropping?')
+                    
+                    
+                    
                     ),
                card(
                     tags$img(src = "illustration_intercropping.png"), # Adjust size as needed
