@@ -103,7 +103,8 @@ ggplot(pct_expl_df, aes(x=reorder(pc,-pct_v), y = pct_v)) +
 ggplot(pct_expl_df, aes(x = pc, y = v)) +
   geom_col() +
   geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
-  labs(x = 'Principal component', y = 'Variance explained')
+  labs(x = 'Principal component', y = 'Variance explained')+
+  theme_classic()
 
 
 

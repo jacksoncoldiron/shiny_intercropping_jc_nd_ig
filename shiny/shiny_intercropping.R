@@ -142,6 +142,19 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
   select(-Continent)|>
   prcomp(scale.=TRUE)
 
+# % Variance Explained setup code
+pc_names <- colnames(intercrop_pca_scale$rotation)
+sd_vec <- intercrop_pca_scale$sdev
+var_vec <- sd_vec^2
+
+pct_expl_df <- data.frame(v = var_vec,
+                          pct_v = var_vec / sum(var_vec),
+                          pc = pc_names)
+
+pct_expl_df<-pct_expl_df|>
+  arrange(desc(pct_v))|>
+  head(6) 
+
 
 
 ### create the user interface ### 
@@ -301,8 +314,10 @@ ui <- page_fluid(
     ### Tab 3 ###
       tabPanel("PCA Biplot",
                plotOutput("PCA_plot"),
-               plotOutput("PCA_var")
-               )
+               tags$div(style = "text-align: center; font-size: 14px; margin-top: 10px;", 
+                        "Figure X: Principal Component Analysis (PCA) biplot showing the distribution of observations based on the first two principal components (PC1 and PC2). The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component. The percentage of variance explained by PC1 and PC2 is indicated on the axes. [placeholder: This analysis suggests a potential correlation between specific features and groupings in the data.]"),
+               plotOutput("PCA_var"),
+      )
   )
 )
 
@@ -479,12 +494,11 @@ server <- function(input,output, session){
   })
   
   output$PCA_var<-renderPlot({
-    ggplot(pct_expl_df, aes(x = pc, y = v,fill = v)) +
+    ggplot(pct_expl_df, aes(x = pc, y = v)) +
       geom_col() +
       geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
       labs(x = 'Principal component', y = 'Variance explained')+
-      scale_fill_viridis(option = "D")+
-      theme_minimal()
+      theme_classic()
   })
  
   
