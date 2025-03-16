@@ -10,8 +10,10 @@ library(tidyr)
 library(countrycode)
 library(plotly)
 library(viridis)
+library(showtext)
 
 
+showtext_auto()
 
 ### loadviridis### load data ###  
 intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
@@ -29,20 +31,20 @@ intercrop <- intercrop|>
   mutate(Country = recode(Country, "Philipines" = "Phillippines"))
 
 ### Custom Theme ###
-sandstone_theme <- bs_theme(bootswatch = "sandstone") |>
+yeti_theme <- bs_theme(bootswatch = "yeti") |>
   bs_theme_update(
-  bg = "#2E8B57",           # Light beige background
-  fg = "#3E3E3E",           # Dark gray text
-  primary = "#8B5E3C",      # Warm brown primary color
-  secondary = "#D2B48C",    # Tan secondary color
-  success = "#4CAF50",      # Green for success messages
-  info = "#2E8B57",         # Sea green for informational messages
-  warning = "#E9967A",      # Light coral for warnings
-  danger = "#A52A2A",       # Brownish-red for danger alerts
-  base_font = font_google("Signika"),  
-  heading_font = font_google("Crete Round"), 
-  font_scale = 1.1  
-)
+    bg = "#FFFFFF",        # ✅ White background
+    fg = "#333333",        # ✅ Dark gray text
+    primary = "#008CBA",   # ✅ Yeti's bright blue
+    secondary = "#E7E7E7", # ✅ Light gray accents
+    success = "#43AC6A",   # ✅ Green for success
+    info = "#5BC0DE",      # ✅ Sky blue info
+    warning = "#E99002",   # ✅ Orange warnings
+    danger = "#DA4F49",    # ✅ Red for errors
+    base_font = font_google("Lato"),  
+    heading_font = font_google("Roboto Slab"),  
+    font_scale = 1.1  
+  )
 
 ### Declare global plot variables
 text_size <- 20
@@ -145,7 +147,25 @@ ui <- page_fluid(
   navbarPage(
     'Exploring Intercropping Experiments',
     # Add in theme
-    theme = sandstone_theme,
+    theme = yeti_theme,
+    tags$head(
+      tags$style(HTML("
+      .well, .panel, .sidebar {
+        background-color: #E7E7E7 !important;  /* ✅ Matches sidebar & panels */
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .table {
+        background-color: #E7E7E7 !important;  /* ✅ Matches tables */
+      }
+      body {
+        background-color: #FFFFFF !important;  /* ✅ Matches page background */
+      }
+                 /* ✅ Increases the font size of all slider numbers */
+      .irs-grid-text { font-size: 18px !important; }  /* ✅ Increases tick mark labels */
+      .irs-single { font-size: 20px !important; font-weight: bold; }  /* ✅ Increases selected value */
+    "))
+        ),
     
     ### About Tab ### 
     tabPanel("About",
@@ -166,8 +186,9 @@ ui <- page_fluid(
     tabPanel("Intercropping by Continent",
              titlePanel("Experiments over time for Continents of your choosing!"),
              sidebarLayout(
-               position = "right",
+               position = "left",
                sidebarPanel(
+                 width = 3,
                  checkboxGroupInput("continent", "Select Continents:",
                                     choices = unique(cumulative$continent),
                                     selected = unique(cumulative$continent)),
@@ -180,15 +201,19 @@ ui <- page_fluid(
                    column(12, plotOutput("plotCumulative")),
                    column(8, offset = 1, 
                           sliderInput("yearRange", "Select Year Range:",
+                                      label = tags$span("Select Year Range:", style = "font-size: 20px; font-weight: bold;"),
                                           min = min(cumulative$year),
-                                          max = max(cumulative$year),
+                                          max = 2025,
                                           value = c(min(cumulative$year), max(cumulative$year)),
                                           step = 1,
                                           sep = "",
-                                          width = "100%"))
+                                          width = "100%",
+                                      ),
+                   width = 9
                  )
                 )
               )
+  )
   ),
     
   ### Tab 1A ###
@@ -198,12 +223,16 @@ ui <- page_fluid(
              sidebarLayout(
                position = "right",
                sidebarPanel(
-                 uiOutput("country_info")
+                 uiOutput("country_info"),
+                 width = 3,  
+                 style = "padding: 10px; margin: 0px; width: 100%;"
                  ),
                mainPanel(
                  titlePanel("Click a Country to learn more!"),
+                 width = 9,  
+                 style = "padding-left: 0px; margin-left: 0px",
                fluidRow(
-                 column(12, plotlyOutput("interactive_map"))
+                 column(12, plotlyOutput("interactive_map", height = "65vh"))
                )
               )
             )
@@ -229,7 +258,8 @@ ui <- page_fluid(
                ),
                mainPanel(
                  plotOutput('LER_plot'), 
-                 plotOutput('crop1_exp_over_time_plot')
+                 plotOutput('crop1_exp_over_time_plot'),
+                 width = 9
                )
              )
     ),
@@ -253,6 +283,7 @@ server <- function(input,output, session){
     cumulative |>
       filter(year >= input$yearRange[1],
              year <= input$yearRange[2],
+             year <= 2025,
              continent %in% input$continent)
   })
   
@@ -263,7 +294,22 @@ server <- function(input,output, session){
       geom_line() +
       geom_point(size = 1) +
       theme_classic() +
+      theme(
+        text = element_text(size = text_size, family = "Lato"),              # Change all text size
+        axis.text = element_text(size = text_size),  
+        axis.text.y = element_text(family = "Open Sans"),# Axis tick labels
+        axis.title = element_text(size = text_size, family = "Open Sans"),        # Axis titles
+        legend.text = element_text(size = text_size), 
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"), 
+        legend.title = element_text(size = text_size, face = "bold")) +
       scale_color_viridis_d(option = "viridis") +
+      scale_x_continuous(
+        breaks = seq(
+          from = min(cumulative$year, na.rm = TRUE),  
+          to = 2025, 
+          by = 5
+        )
+      ) +
       labs(x = "Year", 
            y = "Cumulative Experiments",
            color = NULL)
@@ -281,6 +327,7 @@ server <- function(input,output, session){
         name = ""
       ) +
       theme_minimal() +
+      theme(plot.margin = margin(0, 0, 0, 0)) +
       labs(title = "", x = "", y  = "")
     
     ggplotly(p) |>
