@@ -11,6 +11,8 @@ library(countrycode)
 library(plotly)
 library(viridis)
 library(showtext)
+library(png)
+
 
 
 showtext_auto()
@@ -171,15 +173,47 @@ ui <- page_fluid(
     tabPanel("About",
              
              layout_columns(  
-               card(tags$b('Intro to Intercropping')),  
-               card(tags$b("Graphics")),
+               card(tags$b('What is intercropping?')
+                    ),
+               card(
+                    tags$img(src = "illustration_intercropping.png"), # Adjust size as needed
+                    tags$p('Schematic illustrations and examples of alternative intercropping strategies.
+                           a, Strip intercropping, with both species grown simultaneously. 
+                           b, Relay strip intercropping, with one species sown and harvested later than the other. 
+                           c, Alternate-row intercropping. 
+                           d, Mixed intercropping. 
+                           e, A mini tractor sowing soybean and applying fertilizer in maize/soybean relay strip intercropping. 
+                           f, Relay strip intercropping of maize and soybean. 
+                           g, A soybean harvester working in a soybean strip in Southwest China. 
+                           h, Alternate-row intercropping of durum wheat and winter pea in France. 
+                           i, Mixed lentil/spring wheat intercropping at harvest. 
+                           j, Mechanical harvest of mixed lentil/spring wheat intercropping in France. Credit: ', 
+                           style = "font-style: italic; text-align: left;")
+                    ),
+               
                card(tags$b("Widgets overview"),
                     tags$i("Widget 1:"), "Explore intercropping yield by continent.", tags$br(),
                     tags$i("Widget 2:"), "Compares the LER of different crop types.", tags$br(),
-                    tags$i("Widget 3:"), "Displays a biplot of a PCA, demonstrating the relatedness and effect of each variable"),
-               col_widths = c(4, 8, 4)
-             )
-    ),
+                    tags$i("Widget 3:"), "Displays a biplot of a PCA, demonstrating the relatedness and effect of each variable"
+                    ),
+               
+               card(tags$b('Data summary'),
+                    tags$p('Data is derived from a comprehensive meta-analysis of global intercropping experiments. 
+                            All observations are from field experiments published worldwide from 1982 and 2022. 
+                            Included in the data are (i) general information on the experiments; (ii) experimental site soil and climate conditions; 
+                            (iii) descriptions of intercropping designs; (iv) crop management practices; 
+                            (v) measurements of sole crop and intercrop yields and (vi) Land Equivalent Ratios.'),
+                    tags$p(tags$i("Citation: "), "Paut, R., Garreau, L., Ollivier, G. et al. A global dataset of experimental intercropping and 
+                             agroforestry studies in horticulture. Sci Data 11, 5 (2024). ",
+                           tags$a(href = "https://doi.org/10.1038/s41597-023-02831-7", "https://doi.org/10.1038/s41597-023-02831-7", target = "_blank")),
+                    tags$p(tags$i("Data repository: "),
+                           tags$a(href = "https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1", 
+                                  "https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1", 
+                                  target = "_blank"))
+                    ),
+               col_widths = c(4, 8, 6, 6)
+               )
+             ),
         
     ### Tab 1 ###
     # Add the option to select the continent
@@ -428,6 +462,8 @@ server <- function(input,output, session){
     intercrop_sum_table()
   })
   
+  #### Tab: PCA ####
+  
   output$PCA_plot<-renderPlot({
     autoplot(intercrop_pca_scale,
              data = intercrop_pca_data_clean,
@@ -452,7 +488,7 @@ server <- function(input,output, session){
   })
  
   
-  #### Tab 2: LER plots ####
+  #### Tab: LER plots ####
   observe({
     req(intercrop_LER)
     # Get valid crop2 choices for default crop1 (Maize)
@@ -499,7 +535,8 @@ server <- function(input,output, session){
         legend.text = element_text(size = text_size),       # Legend labels
         legend.title = element_text(size = text_size, face = "bold"),  # Legend title
         plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
-        )
+        )+
+      scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
   })
   
   # set up data for cumulative experiments by crop 
@@ -543,10 +580,17 @@ server <- function(input,output, session){
       geom_line()+
       labs(x = 'Year', 
            y = 'Cumulative experiment count', 
-           color = 'Crop 2 type')+
-      theme_classoic()
-    
-    
+           color = 'Crop 2')+
+      theme_classic()+
+      theme(
+        text = element_text(size = text_size),              # Change all text size
+        axis.text = element_text(size = text_size),         # Axis tick labels
+        axis.title = element_text(size = text_size),        # Axis titles
+        legend.text = element_text(size = text_size),       # Legend labels
+        legend.title = element_text(size = text_size, face = "bold"),  # Legend title
+        plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+      )+
+      scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
   })
 }
 
