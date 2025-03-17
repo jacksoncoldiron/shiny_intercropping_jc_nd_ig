@@ -12,13 +12,13 @@ library(plotly)
 library(viridis)
 library(showtext)
 library(png)
-library(shinydashboard)
+library(shinythemes)
 
 
 
 showtext_auto()
 
-### load viridis### load data ###  
+### loadviridis### load data ###  
 intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
 ### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
@@ -34,20 +34,7 @@ intercrop <- intercrop|>
   mutate(Country = recode(Country, "Philipines" = "Phillippines"))
 
 ### Custom Theme ###
-yeti_theme <- bs_theme(bootswatch = "yeti") |>
-  bs_theme_update(
-    bg = "#FFFFFF",        # ✅ White background
-    fg = "#333333",        # ✅ Dark gray text
-    primary = "#008CBA",   # ✅ Yeti's bright blue
-    secondary = "#E7E7E7", # ✅ Light gray accents
-    success = "#43AC6A",   # ✅ Green for success
-    info = "#5BC0DE",      # ✅ Sky blue info
-    warning = "#E99002",   # ✅ Orange warnings
-    danger = "#DA4F49",    # ✅ Red for errors
-    base_font = font_google("Lato"),  
-    heading_font = font_google("Roboto Slab"),  
-    font_scale = 1.1  
-  )
+my_theme <- bs_theme(version = 5, bootswatch = "sandstone", font = "Roboto Slab")
 
 ### Declare global plot variables
 text_size <- 20
@@ -157,166 +144,197 @@ pct_expl_df<-pct_expl_df|>
   head(6) 
 
 
-# ### create the user interface ###
 
-ui <- (fluidPage(
-  
-  # load custom stylesheet
-  #includeCSS("www/style.css"),
-  
-  ### declare css styling ### 
-  tags$head(
-    tags$style(HTML("
-    .padded-text {
-      padding-left: 20px;}"
-                    )
-               ),
-    tags$style(HTML("
-      .sidebar-menu > li > a {
-        font-size: 18px !important;  /* Adjust size as needed */}"
-                    )
-               )
-    ),
-  
-  # load google analytics script
-  # tags$head(includeScript("www/google-analytics-bioNPS.js")),
-  
-  # remove shiny "red" warning messages on GUI
-  tags$style(type="text/css",
-             ".shiny-output-error { visibility: hidden; }",
-             ".shiny-output-error:before { visibility: hidden; }"
-  ),
-  
-  # load page layout
-  dashboardPage(
-    
-    skin = "blue",
-    
-    dashboardHeader(title="Intercropping Around the World", titleWidth = 320),
-    
-    dashboardSidebar(width = 320,
-                     sidebarMenu(
-                       tags$img(src = "corn_wheat.png", width = 300),
-                       tags$p("Image credit: pngtree.com", class = 'padded-text', style = "font-style: italic; font-size: 12px; text-align: left;"),
-                       menuItem("Home", tabName = "home", icon = icon("home")),
-                       menuItem("Intercropping by continent", tabName = "continent", icon = icon("thumbtack")),
-                       menuItem("Experiments by country", tabName = "map", icon = icon("map marked alt")),
-                       menuItem("LER by crop types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
-                       menuItem("Principal Component Analysis", tabName = "pca", icon = icon("stats", lib = "glyphicon")),
-                       tags$p(
-                         tags$br(),
-                         "Developed by",
-                         tags$a(href = "https://www.linkedin.com/in/jackson-coldiron/", "Jackson Coldiron", target = "_blank"), tags$br(),
-                         tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicholas DeStephano", target = "_blank"), tags$br(),
-                         "and", tags$a(href = "https://www.linkedin.com/in/isa-elias/", "Isa Elias", target = "_blank"), tags$br(),
-                         style = "font-style: italic; font-size: 18px; text-align: left; padding-left: 15px;")
-                     )
-    ), # end dashboardSidebar
-    
-    dashboardBody(
+### create the user interface ### 
+ui <- page_fluid(
+  theme = my_theme,
+  navbarPage(
+    # Add in theme adjustments
+    tags$head(
+      tags$style(HTML("
+      .navbar-nav {
+        float: left !important;  /* Align tab buttons to the left */
+      }
       
-      tabItems(
-        
-        tabItem(tabName = "home",
-                
-                # home section
-                includeHTML("www/home.html")
-                
+      .navbar-brand {
+        width: 100%;
+        text-align: center !important; /* Center the title */
+        font-size: 24px !important;
+        font-weight: bold !important;
+        padding: 15px;
+        display: block;
+      }
+      
+      .navbar-header {
+        width: 100%;
+        text-align: center; /* Ensures the header spans the navbar */
+      }
+      
+      .navbar .container-fluid {
+        display: flex;
+        flex-direction: column; /* Stack title above tab panels */
+        align-items: center;
+      }
+      
+      .navbar .nav {
+        width: 100%;
+        text-align: left;
+      }
+      .well, .panel, .sidebar {
+        background-color: #E7E7E7 !important;  /* ✅ Matches sidebar & panels */
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .table {
+        background-color: #E7E7E7 !important;  /* ✅ Matches tables */
+      }
+      body {
+        background-color: #FFFFFF !important;  /* ✅ Matches page background */
+      }
+                 /* ✅ Increases the font size of all slider numbers */
+      .irs-grid-text { font-size: 18px !important; }  /* ✅ Increases tick mark labels */
+      .irs-single { font-size: 20px !important; font-weight: bold; }  /* ✅ Increases selected value */
+    "))
         ),
+    title = div("Exploring Intercropping Experiments", class = "navbar-brand"),
+    ### About Tab ### 
+    tabPanel("About",
+             
+             layout_columns(  
+               card(tags$b('What is intercropping?')
+                    ),
+               card(
+                    tags$img(src = "illustration_intercropping.png"), # Adjust size as needed
+                    tags$p('Schematic illustrations and examples of alternative intercropping strategies.
+                           a, Strip intercropping, with both species grown simultaneously. 
+                           b, Relay strip intercropping, with one species sown and harvested later than the other. 
+                           c, Alternate-row intercropping. 
+                           d, Mixed intercropping. 
+                           e, A mini tractor sowing soybean and applying fertilizer in maize/soybean relay strip intercropping. 
+                           f, Relay strip intercropping of maize and soybean. 
+                           g, A soybean harvester working in a soybean strip in Southwest China. 
+                           h, Alternate-row intercropping of durum wheat and winter pea in France. 
+                           i, Mixed lentil/spring wheat intercropping at harvest. 
+                           j, Mechanical harvest of mixed lentil/spring wheat intercropping in France. Credit: ', 
+                           style = "font-style: italic; text-align: left;")
+                    ),
+               
+               card(tags$b("Widgets overview"),
+                    tags$i("Widget 1:"), "Explore intercropping yield by continent.", tags$br(),
+                    tags$i("Widget 2:"), "Compares the LER of different crop types.", tags$br(),
+                    tags$i("Widget 3:"), "Displays a biplot of a PCA, demonstrating the relatedness and effect of each variable"
+                    ),
+               
+               card(tags$b('Data summary'),
+                    tags$p('Data is derived from a comprehensive meta-analysis of global intercropping experiments. 
+                            All observations are from field experiments published worldwide from 1982 and 2022. 
+                            Included in the data are (i) general information on the experiments; (ii) experimental site soil and climate conditions; 
+                            (iii) descriptions of intercropping designs; (iv) crop management practices; 
+                            (v) measurements of sole crop and intercrop yields and (vi) Land Equivalent Ratios.'),
+                    tags$p(tags$i("Citation: "), "Paut, R., Garreau, L., Ollivier, G. et al. A global dataset of experimental intercropping and 
+                             agroforestry studies in horticulture. Sci Data 11, 5 (2024). ",
+                           tags$a(href = "https://doi.org/10.1038/s41597-023-02831-7", "https://doi.org/10.1038/s41597-023-02831-7", target = "_blank")),
+                    tags$p(tags$i("Data repository: "),
+                           tags$a(href = "https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1", 
+                                  "https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1", 
+                                  target = "_blank"))
+                    ),
+               col_widths = c(4, 8, 6, 6)
+               )
+             ),
         
-        tabItem(tabName = "continent",
-                
-                # parks map section
-                titlePanel("Experiments over time for Continents of your choosing!"),
-                sidebarLayout(
-                  position = "left",
-                  sidebarPanel(
-                    width = 3,
-                    checkboxGroupInput("continent", "Select Continents:",
-                                       choices = unique(cumulative$continent),
-                                       selected = unique(cumulative$continent)),
-                    
-                  ),
-                  
-                  # Plotting the cumulative experiments over time
-                  mainPanel(
-                    fluidRow(
-                      column(12, plotOutput("plotCumulative")),
-                      column(8, offset = 1, 
-                             sliderInput("yearRange", "Select Year Range:",
-                                         label = tags$span("Select Year Range:", style = "font-size: 20px; font-weight: bold;"),
-                                         min = min(cumulative$year),
-                                         max = 2025,
-                                         value = c(min(cumulative$year), max(cumulative$year)),
-                                         step = 1,
-                                         sep = "",
-                                         width = "100%",
-                             ),
-                             width = 9
-                      )
-                    )
-                  )
-                )                
-        ),
-        
-        tabItem(tabName = 'map',
-          # species data section
-          titlePanel(""),
-          sidebarLayout(
-            position = "right",
-            sidebarPanel(
-              uiOutput("country_info"),
-              width = 3,  
-              style = "padding: 10px; margin: 0px; width: 100%;"
-            ),
-            mainPanel(
-              titlePanel("Click a Country to learn more!"),
-              width = 9,  
-              style = "padding-left: 0px; margin-left: 0px",
-              fluidRow(
-                column(12, plotlyOutput("interactive_map", height = "65vh"))
+    ### Tab 1 ###
+    # Add the option to select the continent
+    tabPanel("Intercropping by Continent",
+             titlePanel("Experiments over time for Continents of your choosing!"),
+             sidebarLayout(
+               position = "left",
+               sidebarPanel(
+                 width = 3,
+                 checkboxGroupInput("continent", "Select Continents:",
+                                    choices = unique(cumulative$continent),
+                                    selected = unique(cumulative$continent)),
+            
+               ),
+          
+               # Plotting the cumulative experiments over time
+               mainPanel(
+                 fluidRow(
+                   column(12, plotOutput("plotCumulative")),
+                   column(8, offset = 1, 
+                          sliderInput("yearRange", "Select Year Range:",
+                                      label = tags$span("Select Year Range:", style = "font-size: 20px; font-weight: bold;"),
+                                          min = min(cumulative$year),
+                                          max = 2025,
+                                          value = c(min(cumulative$year), max(cumulative$year)),
+                                          step = 1,
+                                          sep = "",
+                                          width = "100%",
+                                      ),
+                   width = 9
+                 )
+                )
+              )
+  )
+  ),
+    
+  ### Tab 1A ###
+  # Input map
+    tabPanel("Experiments by Country",
+             titlePanel(""),
+             sidebarLayout(
+               position = "right",
+               sidebarPanel(
+                 uiOutput("country_info"),
+                 width = 3,  
+                 style = "padding: 10px; margin: 0px; width: 100%;"
+                 ),
+               mainPanel(
+                 titlePanel("Click a Country to learn more!"),
+                 width = 9,  
+                 style = "padding-left: 0px; margin-left: 0px",
+               fluidRow(
+                 column(12, plotlyOutput("interactive_map", height = "65vh"))
+               )
               )
             )
-          )          
-        ),
-        
-        tabItem(tabName = "LER_comp", 
-            sidebarLayout(
-              sidebarPanel(
-                selectInput(
-                  inputId = "crop1_type",
-                  label = "Crop 1:",
-                  selected = 'Maize',
-                  choices = unique(intercrop$Crop_1_Common_Name)
-                ),
-                selectInput(
-                  inputId = "crop2_type",
-                  label = "Crop 2:",
-                  selected = 'Cowpea',
-                  choices = NULL # initialize empty, will be updated dynamically
-                )
-              ),
-              mainPanel(
-                fluidRow(
-                  column(10, offset = 1, plotOutput('LER_plot', width = "100%", height = "500px")), 
-                  column(10, offset = 1, plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px"))
-                ),
-                width = 9
-              )
-            )   
-        ),
-        
-        tabItem(tabName = "pca",
-                plotOutput("PCA_plot"),
-                tags$div(style = "text-align: center; font-size: 14px; margin-top: 10px;", 
-                         "Figure X: Principal Component Analysis (PCA) biplot showing the distribution of observations based on the first two principal components (PC1 and PC2). The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component. The percentage of variance explained by PC1 and PC2 is indicated on the axes. [placeholder: This analysis suggests a potential correlation between specific features and groupings in the data.]"),
-                plotOutput("PCA_var"),
-                
-        )
-      ) # end tab items
-    ) # end dashboardBody
-  ) # end dashboardPage
-)) # end shiny fluid page
+    ),
+            
+    
+    ### Tab 2 ###
+    tabPanel("LER by Crop Types",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput(
+                   inputId = "crop1_type",
+                   label = "Crop 1:",
+                   selected = 'Maize',
+                   choices = unique(intercrop$Crop_1_Common_Name)
+                 ),
+                 selectInput(
+                   inputId = "crop2_type",
+                   label = "Crop 2:",
+                   selected = 'Cowpea',
+                   choices = NULL # initialize empty, will be updated dynamically
+                 )
+               ),
+               mainPanel(
+                 plotOutput('LER_plot'), 
+                 plotOutput('crop1_exp_over_time_plot'),
+                 width = 9
+               )
+             )
+    ),
+    
+    ### Tab 3 ###
+      tabPanel("PCA Biplot",
+               plotOutput("PCA_plot"),
+               tags$div(style = "text-align: center; font-size: 14px; margin-top: 10px;", 
+                        "Figure X: Principal Component Analysis (PCA) biplot showing the distribution of observations based on the first two principal components (PC1 and PC2). The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component. The percentage of variance explained by PC1 and PC2 is indicated on the axes. [placeholder: This analysis suggests a potential correlation between specific features and groupings in the data.]"),
+               plotOutput("PCA_var"),
+      )
+  )
+)
 
 
 
@@ -544,8 +562,8 @@ server <- function(input,output, session){
         axis.text = element_text(size = text_size),         # Axis tick labels
         axis.title = element_text(size = text_size),        # Axis titles
         legend.text = element_text(size = text_size),       # Legend labels
-        legend.title = element_text(size = text_size, face = "bold")  # Legend title
-        # plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+        legend.title = element_text(size = text_size, face = "bold"),  # Legend title
+        plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
         )+
       scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
   })
@@ -598,8 +616,8 @@ server <- function(input,output, session){
         axis.text = element_text(size = text_size),         # Axis tick labels
         axis.title = element_text(size = text_size),        # Axis titles
         legend.text = element_text(size = text_size),       # Legend labels
-        legend.title = element_text(size = text_size, face = "bold")  # Legend title
-        #plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+        legend.title = element_text(size = text_size, face = "bold"),  # Legend title
+        plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
       )+
       scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
   })
