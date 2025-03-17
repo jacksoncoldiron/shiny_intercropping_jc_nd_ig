@@ -129,12 +129,13 @@ intercrop_pca_data <- intercrop |>
   mutate(Row=ifelse(Intercropping_pattern=="Row",1,0))|>
   mutate(AF=ifelse(Intercropping_pattern=="AF",1,0))|>
   mutate(Strip=ifelse(Intercropping_pattern=="Strip",1,0))|>
-  mutate(Mixed=ifelse(Intercropping_pattern=="Mixed",1,0))|>
+  mutate(Mixed = ifelse(Intercropping_pattern == "Mixed", 1, 0)) |>
+  rename(LER = LER_tot_calc) |>
   select(-Crop_1_Common_Name,-Crop_2_Common_Name,-Country,-Experiment_period,-Intercropping_design,-Intercropping_pattern)|>
   drop_na()
 
 # Change "," values in numeric values to "."
-intercrop_pca_data$LER_tot_calc <-as.numeric(gsub(",",".",intercrop_pca_data$LER_tot_calc))
+intercrop_pca_data$LER <-as.numeric(gsub(",",".",intercrop_pca_data$LER))
 intercrop_pca_data$Latitude <-as.numeric(gsub(",",".",intercrop_pca_data$Latitude))
 
 # Check for NAs
@@ -340,15 +341,39 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = "pca",
-                plotOutput("PCA_plot"),
-                tags$div(style = "text-align: center; font-size: 14px; margin-top: 10px;", 
-                         "Figure X: Principal Component Analysis (PCA) biplot showing the distribution of observations based on the first two principal components (PC1 and PC2). The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component. The percentage of variance explained by PC1 and PC2 is indicated on the axes. [placeholder: This analysis suggests a potential correlation between specific features and groupings in the data.]"),
-                plotOutput("PCA_var")
-                
+                mainPanel(
+                    width = 12,
+                    fluidRow(
+                      # First plot (PCA plot)
+                      column(10, offset = 0, 
+                             tags$div(
+                               style = "padding: 5px; border-radius: 10px; background-color: white;",
+                               
+                               # Title for the first plot
+                               tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
+                               
+                               plotOutput('PCA_plot', width = "100%", height = "500px")
+                             ),
+                             
+                             tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
+                      ),
+                      
+                      # Second plot (crop1_exp_over_time_plot)
+                      column(10, offset = 0, 
+                             tags$div(
+                               style = "padding: 5px; border-radius: 10px; background-color: white;",
+                               
+                               # Title for the second plot
+                               tags$h3("Percentage of Variance Explained", style = "text-align: center; color: black;"),
+                               
+                               plotOutput('PCA_var', width = "100%", height = "500px")
+                             )
+                      )
+                    )
+                  )
         )
       ) # end tab items
     ) # end dashboardBody
-
   ) # end dashboardPage
 ) # end shiny fluid page
 
@@ -515,22 +540,45 @@ server <- function(input,output, session){
              loadings = TRUE,
              colour = 'Continent',
              loadings.label = TRUE,
-             loadings.colour = "black",
+             loadings.colour = "grey",
              loadings.label.colour = "black",
-             loadings.label.repel=T
+             loadings.label.repel = TRUE,
+             loadings.label.fontface = "bold",  
+             force = 10,  # Adjust force for better label repulsion
+             max.iter = 1000,  # Increase number of iterations for better optimization
+             box.padding = 0.5,  # Increase box padding for labels
+             nudge_x = 0.1,  # Adjust nudge values if necessary
+             nudge_y = 0.1
     ) +
       scale_color_viridis(discrete = TRUE) +   # Apply the Viridis color palette
-      theme_minimal()
+      theme_classic() +
+      theme(
+        text = element_text(size = text_size, family = "Lato"),  # Change all text size
+        axis.text = element_text(size = text_size),
+        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
+        axis.title = element_text(size = text_size, family = "Open Sans"),  # Axis titles
+        legend.text = element_text(size = text_size),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
+        legend.title = element_text(size = text_size, face = "bold")
+      )
   })
-  
+ 
   output$PCA_var<-renderPlot({
     ggplot(pct_expl_df, aes(x = pc, y = v)) +
       geom_col() +
       geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
       labs(x = 'Principal component', y = 'Variance explained')+
-      theme_classic()
+      theme_classic()+
+      theme(
+        text = element_text(size = text_size, family = "Lato"),  # Change all text size
+        axis.text = element_text(size = text_size),
+        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
+        axis.title = element_text(size = text_size, family = "Open Sans"),  # Axis titles
+        legend.text = element_text(size = text_size),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
+        legend.title = element_text(size = text_size, face = "bold")
+      )
   })
- 
   
   #### Tab: LER plots ####
   observe({
