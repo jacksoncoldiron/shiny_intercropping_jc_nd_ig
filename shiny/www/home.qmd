@@ -11,35 +11,40 @@ Intercropping is an agricultural practice where two crop species are grown toget
 ```{r}
 knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 ```
+<small>*Corn and soy intercropped in the Gansu province of China.*</small>
 
 ::: panel-tabset
 ## Intercropping 101
 
 ```{r}
+#| echo: false
+#| out.width: "80%"
+#| out.height: "auto"
+
 knitr::include_graphics(here::here("shiny","www","illustration_intercropping.png"))
 ```
 
 Schematic illustrations and examples of alternative intercropping strategies.
 
-a.  **Strip intercropping:** both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability
+a. **Strip intercropping:** both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability
 
-b.  **Relay strip intercropping:** one crop is planted in strips and another is sown into those strips before the first crop is harvested, allowing for temporal overlap and efficient land use.
+b. **Relay strip intercropping:** one crop is planted in strips and another is sown into those strips before the first crop is harvested, allowing for temporal overlap and efficient land use.
 
-c.  **Alternate-row intercropping:** two crops are planted in alternating rows within the same field to optimize resource use, enhance biodiversity, and improve yield stability.
+c. **Alternate-row intercropping:** two crops are planted in alternating rows within the same field to optimize resource use, enhance biodiversity, and improve yield stability.
 
-d.  **Mixed intercropping** two crops are grown together in the same field without a distinct row arrangement, allowing for natural plant interactions that optimize resource use and enhance biodiversity.
+d. **Mixed intercropping** two crops are grown together in the same field without a distinct row arrangement, allowing for natural plant interactions that optimize resource use and enhance biodiversity.
 
-e.  A mini tractor sowing soybean and applying fertilizer in maize/soybean relay strip intercropping.
+e. A mini tractor sowing soybean and applying fertilizer in maize/soybean relay strip intercropping.
 
-f.  Relay strip intercropping of maize and soybean.
+f. Relay strip intercropping of maize and soybean.
 
-g.  A soybean harvester working in a soybean strip in Southwest China.
+g. A soybean harvester working in a soybean strip in Southwest China.
 
-h.  Alternate-row intercropping of durum wheat and winter pea in France.
+h. Alternate-row intercropping of durum wheat and winter pea in France.
 
-i.  Mixed lentil/spring wheat intercropping at harvest.
+i. Mixed lentil/spring wheat intercropping at harvest.
 
-j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
+j. Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 ## App Guide
 
@@ -55,7 +60,16 @@ j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 Data is derived from a comprehensive meta-analysis of global intercropping experiments. All observations are from field experiments published worldwide from 1982 and 2022. Included in the data are (i) general information on the experiments; (ii) experimental site soil and climate conditions; (iii) descriptions of intercropping designs; (iv) crop management practices; (v) measurements of sole crop and intercrop yields and (vi) Land Equivalent Ratios.
 
-*Citation*: Paut, R., Garreau, L., Ollivier, G. et al. A global dataset of experimental intercropping and agroforestry studies in horticulture. Sci Data 11, 5 (2024). <a href="https://www.nature.com/articles/s41597-023-02831-7" target="_blank">Read the paper</a>
+**Citation**: Paut, R., Garreau, L., Ollivier, G. et al. A global dataset of experimental intercropping and agroforestry studies in horticulture. Sci Data 11, 5 (2024). <a href="https://www.nature.com/articles/s41597-023-02831-7" target="_blank">Read the paper</a>
 
-*Repository*: <a href="https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1" target="_blank">Checkout the data</a>
+**Repository**: <a href="https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/HV33V1" target="_blank">Checkout the data</a>
+
+**Images**:
+
+- Corn and Wheat logo: Courtesy of pngtree.com
+
+- Corn and Soy photo: Courtesy of Zoe Sims 2024
+
+- Intercropping diagram: Li C. et al. (2020). Nature Plants
+
 :::

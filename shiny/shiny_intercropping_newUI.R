@@ -166,22 +166,47 @@ ui <- fluidPage(
   ### declare css styling ### 
   tags$head(
     tags$style(HTML("
-    .padded-text {
-      padding-left: 20px;}"
-                    )
-               ),
-    tags$style(HTML("
+      /* Ensure header title bar and sidebar toggle button are the same height */
+      .main-header .logo {
+        height: 80px !important;
+        line-height: 80px !important;
+        padding-top: 10px !important; /* Adjust spacing if needed */
+        padding-bottom: 10px !important;
+        white-space: normal !important; /* Allows text to wrap */
+        font-size: 26px !important;
+        font-weight: bold !important;    /* Makes it bold */
+        line-height: 1.2 !important; /* Adjust line spacing */
+        text-align: center !important;
+        word-wrap: break-word !important;
+      }
+
+      .main-header .navbar {
+        min-height: 80px !important;
+        height: 80px !important;
+      }
+
+      /* Ensure sidebar toggle (three lines button) matches header height */
+      .main-header .sidebar-toggle {
+        height: 80px !important;
+        line-height: 80px !important;
+        padding: 10px 15px !important; /* Fine-tune spacing */
+        margin-left: 0px !important;
+        display: flex !important; /* Ensures proper alignment */
+        align-items: center !important;
+      }
+
+      /* Force sidebar toggle to align left */
+      .navbar .sidebar-toggle {
+        float: left !important;
+        margin-left: 0px !important;
+      }
+
+      /* Increase sidebar menu font size */
       .sidebar-menu > li > a {
-        font-size: 20px !important;  /* Adjust size as needed */}"
-                    )
-               ),
-    tags$style(HTML("
-    .main-header .sidebar-toggle {
-      margin-left: 10px !important; /* Adjust the margin */
-      float: left !important; /* Force it to the left */}"
-                    )
-               )
-    ),
+        font-size: 20px !important;
+      }
+    "))
+  ),
   
   
   # remove shiny "red" warning messages on GUI
@@ -193,18 +218,20 @@ ui <- fluidPage(
   # load page layout
   dashboardPage(
     
-    skin = "blue",
+    skin = "green",
     
-    dashboardHeader(title="Intercropping Around the World", titleWidth = 320),
+    dashboardHeader(
+      title = "Intercropping Around the World",  
+      titleWidth = 320
+    ),
     
     dashboardSidebar(width = 320,
                      sidebarMenu(id = 'selected_tab',
                        tags$img(src = "corn_wheat.png", width = 300),
-                       tags$p("Image credit: pngtree.com", class = 'padded-text', style = "font-style: italic; font-size: 10px; text-align: left;"),
                        menuItem("Home", tabName = "home", icon = icon("home"), selected = TRUE), # selected TRUE not working
-                       menuItem("Intercropping by continent", tabName = "continent", icon = icon("thumbtack")),
-                       menuItem("Experiments by country", tabName = "map", icon = icon("map marked alt")),
-                       menuItem("LER by crop types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
+                       menuItem("Intercropping by Continent", tabName = "continent", icon = icon("thumbtack")),
+                       menuItem("Map of Experiments", tabName = "map", icon = icon("map marked alt")),
+                       menuItem("LER by Crop Types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
                        menuItem("Principal Component Analysis", tabName = "pca", icon = icon("stats", lib = "glyphicon")),
                        tags$p(
                          tags$br(),
@@ -212,7 +239,7 @@ ui <- fluidPage(
                          tags$a(href = "https://www.linkedin.com/in/jackson-coldiron/", "Jackson Coldiron", target = "_blank"), tags$br(),
                          tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicholas DeStephano", target = "_blank"), tags$br(),
                          "and", tags$a(href = "https://www.linkedin.com/in/isa-elias/", "Isa Elias", target = "_blank"), tags$br(),
-                         style = "font-style: italic; font-size: 18px; text-align: left; padding-left: 15px;")
+                         style = "font-style: italic; font-size: 14px; text-align: left; padding-left: 15px;")
                      )
     ), # end dashboardSidebar
     
