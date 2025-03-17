@@ -238,7 +238,7 @@ ui <- fluidPage(
                          tags$br(),
                          "Developed by",
                          tags$a(href = "https://www.linkedin.com/in/jackson-coldiron/", "Jackson Coldiron", target = "_blank"), tags$br(),
-                         tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicholas DeStephano", target = "_blank"), tags$br(),
+                         tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicolas DeStephano", target = "_blank"), tags$br(),
                          "and", tags$a(href = "https://www.linkedin.com/in/isa-elias/", "Isa Elias", target = "_blank"), tags$br(),
                          style = "font-style: italic; font-size: 14px; text-align: left; padding-left: 15px;")
                      )
@@ -385,7 +385,7 @@ ui <- fluidPage(
                              tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
                       ),
                       
-                      # Second plot (crop1_exp_over_time_plot)
+                      # Second plot (pct_var_PCA)
                       column(10, offset = 0, 
                              tags$div(
                                style = "padding: 5px; border-radius: 10px; background-color: white;",
