@@ -13,6 +13,8 @@ library(viridis)
 library(showtext)
 library(png)
 library(shinydashboard)
+library(shinycssloaders)
+
 
 
 
@@ -159,11 +161,8 @@ pct_expl_df<-pct_expl_df|>
 
 # ### create the user interface ###
 
-ui <- (fluidPage(
-  
-  # load custom stylesheet
-  #includeCSS("www/style.css"),
-  
+ui <- fluidPage(
+
   ### declare css styling ### 
   tags$head(
     tags$style(HTML("
@@ -173,19 +172,23 @@ ui <- (fluidPage(
                ),
     tags$style(HTML("
       .sidebar-menu > li > a {
-        font-size: 18px !important;  /* Adjust size as needed */}"
+        font-size: 20px !important;  /* Adjust size as needed */}"
+                    )
+               ),
+    tags$style(HTML("
+    .main-header .sidebar-toggle {
+      margin-left: 10px !important; /* Adjust the margin */
+      float: left !important; /* Force it to the left */}"
                     )
                )
     ),
   
-  # load google analytics script
-  # tags$head(includeScript("www/google-analytics-bioNPS.js")),
   
   # remove shiny "red" warning messages on GUI
-  tags$style(type="text/css",
-             ".shiny-output-error { visibility: hidden; }",
-             ".shiny-output-error:before { visibility: hidden; }"
-  ),
+  # tags$style(type="text/css",
+  #            ".shiny-output-error { visibility: hidden; }",
+  #            ".shiny-output-error:before { visibility: hidden; }"
+  # ),
   
   # load page layout
   dashboardPage(
@@ -195,10 +198,10 @@ ui <- (fluidPage(
     dashboardHeader(title="Intercropping Around the World", titleWidth = 320),
     
     dashboardSidebar(width = 320,
-                     sidebarMenu(
+                     sidebarMenu(id = 'selected_tab',
                        tags$img(src = "corn_wheat.png", width = 300),
-                       tags$p("Image credit: pngtree.com", class = 'padded-text', style = "font-style: italic; font-size: 12px; text-align: left;"),
-                       menuItem("Home", tabName = "home", icon = icon("home")),
+                       tags$p("Image credit: pngtree.com", class = 'padded-text', style = "font-style: italic; font-size: 10px; text-align: left;"),
+                       menuItem("Home", tabName = "home", icon = icon("home"), selected = TRUE), # selected TRUE not working
                        menuItem("Intercropping by continent", tabName = "continent", icon = icon("thumbtack")),
                        menuItem("Experiments by country", tabName = "map", icon = icon("map marked alt")),
                        menuItem("LER by crop types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
@@ -214,19 +217,17 @@ ui <- (fluidPage(
     ), # end dashboardSidebar
     
     dashboardBody(
-      
+
       tabItems(
         
         tabItem(tabName = "home",
+                
                 
                 # home section
                 includeHTML("www/home.html")
                 
         ),
-        
         tabItem(tabName = "continent",
-                
-                # parks map section
                 titlePanel("Experiments over time for Continents of your choosing!"),
                 sidebarLayout(
                   position = "left",
@@ -283,25 +284,57 @@ ui <- (fluidPage(
         tabItem(tabName = "LER_comp", 
             sidebarLayout(
               sidebarPanel(
-                selectInput(
-                  inputId = "crop1_type",
-                  label = "Crop 1:",
-                  selected = 'Maize',
-                  choices = unique(intercrop$Crop_1_Common_Name)
-                ),
-                selectInput(
-                  inputId = "crop2_type",
-                  label = "Crop 2:",
-                  selected = 'Cowpea',
-                  choices = NULL # initialize empty, will be updated dynamically
+                width = 6,
+                fluidRow(
+                  column(6, 
+                         selectInput(
+                           inputId = "crop1_type",
+                           label = "Crop 1:",
+                           selected = 'Maize',
+                           choices = unique(intercrop$Crop_1_Common_Name)
+                         )
+                  ),
+                  
+                  column(6, 
+                         selectInput(
+                           inputId = "crop2_type",
+                           label = "Crop 2:",
+                           selected = 'Cowpea',
+                           choices = NULL # initialize empty, will be updated dynamically. NOT WORKING
+                         )
+                  )
                 )
               ),
+              
               mainPanel(
+                width = 12,
                 fluidRow(
-                  column(10, offset = 1, plotOutput('LER_plot', width = "100%", height = "500px")), 
-                  column(10, offset = 1, plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px"))
-                ),
-                width = 9
+                  # First plot (LER_plot)
+                  column(10, offset = 0, 
+                         tags$div(
+                           style = "padding: 5px; border-radius: 10px; background-color: white;",
+                           
+                           # Title for the first plot
+                           tags$h3("LER Comparison by Crop Type", style = "text-align: center; color: black;"),
+                           
+                           plotOutput('LER_plot', width = "100%", height = "500px")
+                         ),
+                         
+                         tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
+                  ),
+                  
+                  # Second plot (crop1_exp_over_time_plot)
+                  column(10, offset = 0, 
+                         tags$div(
+                           style = "padding: 5px; border-radius: 10px; background-color: white;",
+                           
+                           # Title for the second plot
+                           tags$h3("Cumulative Experiments of Crop 1 Over Time", style = "text-align: center; color: black;"),
+                           
+                           plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px")
+                         )
+                  )
+                )
               )
             )   
         ),
@@ -310,19 +343,19 @@ ui <- (fluidPage(
                 plotOutput("PCA_plot"),
                 tags$div(style = "text-align: center; font-size: 14px; margin-top: 10px;", 
                          "Figure X: Principal Component Analysis (PCA) biplot showing the distribution of observations based on the first two principal components (PC1 and PC2). The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component. The percentage of variance explained by PC1 and PC2 is indicated on the axes. [placeholder: This analysis suggests a potential correlation between specific features and groupings in the data.]"),
-                plotOutput("PCA_var"),
+                plotOutput("PCA_var")
                 
         )
       ) # end tab items
     ) # end dashboardBody
+
   ) # end dashboardPage
-)) # end shiny fluid page
-
-
+) # end shiny fluid page
 
 ### create the server function (where all the magic happens from data analysis) ### 
 # Year range slider for user to select the year range
 server <- function(input,output, session){
+  
   
   ### Tab 1: Experiments Overview ###
   filteredData <- reactive({
@@ -517,6 +550,7 @@ server <- function(input,output, session){
   observeEvent(input$crop1_type, {
     filtered_choices <- unique(intercrop |> 
                                  filter(Crop_1_Common_Name == input$crop1_type) |> 
+                                 drop_na(LER_crop1, LER_crop2)|>
                                  pull(Crop_2_Common_Name))
     
     updateSelectInput(session, "crop2_type", choices = filtered_choices)
@@ -524,20 +558,22 @@ server <- function(input,output, session){
   
   intercrop_LER_filtered <- reactive({
     intercrop_LER |>
-    filter(crop1 == input$crop1_type, 
-           crop2 == input$crop2_type) |>
+      filter(crop1 == input$crop1_type, crop2 == input$crop2_type) |>
+      mutate(intercropping_design = ifelse(is.na(intercropping_design), "Not specified", intercropping_design)) |>
       drop_na(ler_crop1, ler_crop2)
   })
   
   output$LER_plot <- renderPlot({
     
-    ggplot(data = intercrop_LER_filtered(), aes(x=ler_crop1, y = ler_crop2, color = country))+
+    ggplot(data = intercrop_LER_filtered(), aes(x=ler_crop1, y = ler_crop2, color = country, shape = intercropping_design))+
       geom_point(size = 3)+
       geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
                    linetype = "dashed", color = "black") +
       #xlim(0,1.25)+
       #ylim(0,1.25)+
-      labs(x = paste0(input$crop1_type, ' LER'), y = paste0(input$crop2_type, ' LER'), color = 'Country')+
+      labs(x = paste0(input$crop1_type, ' LER'), y = paste0(input$crop2_type, ' LER'), 
+           color = 'Country', 
+           shape = 'Intercropping design')+
       theme_classic()+
       theme(
         text = element_text(size = text_size),              # Change all text size
