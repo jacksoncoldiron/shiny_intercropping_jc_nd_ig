@@ -413,15 +413,21 @@ ui <- fluidPage(
                 titlePanel("Explore a Principal Component Analysis of the data"),
                 sidebarLayout(
                   sidebarPanel(
-                    selectInput("pc_select_1", 
-                                label = "Select First Principal Component", 
-                                choices = paste("PC", 1:ncol(pca_df), sep = ""),
-                                selected = "PC1"),
-                    
-                    selectInput("pc_select_2", 
-                                label = "Select Second Principal Component", 
-                                choices = paste("PC", 1:ncol(pca_df), sep = ""),
-                                selected = "PC2")
+                    width = 8,
+                    fluidRow(
+                      column(5, offset = 0,
+                        selectInput("pc_select_1", 
+                                    label = "Select First Principal Component", 
+                                    choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                    selected = "PC1")
+                      ),
+                      column(5, offset = 1,  
+                        selectInput("pc_select_2", 
+                                    label = "Select Second Principal Component", 
+                                    choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                    selected = "PC2")
+                      )
+                    )
                   ),
                   
                   mainPanel(
@@ -430,11 +436,6 @@ ui <- fluidPage(
                         # First plot (PCA plot)
                         column(10, offset = 0, 
                                tags$div(
-                                 style = "padding: 5px; border-radius: 10px; background-color: white;",
-                                 
-                                 # Title for the first plot
-                                 tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
-                                 
                                  plotOutput('PCA_plot', width = "100%", height = "500px"),
                                  
                                  wellPanel(
