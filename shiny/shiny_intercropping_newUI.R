@@ -671,7 +671,7 @@ server <- function(input,output, session){
     
     # Update the choices for the second PC to exclude the first selected PC
     updateSelectInput(session, "pc_select_2", 
-                      choices = setdiff(paste("PC", 1:10, sep = ""), paste("PC", selected_pc_1, sep = "")),
+                      choices = setdiff(paste("PC", 1:6, sep = ""), paste("PC", selected_pc_1, sep = "")),
                       selected = paste("PC", ifelse(selected_pc_1 == 1, 2, 1), sep = ""))
   })
   
