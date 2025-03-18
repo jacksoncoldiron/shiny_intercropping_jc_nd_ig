@@ -17,7 +17,6 @@ knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 
 <small>*Corn and soy intercropped in the Gansu province of China.*</small>
 
-::: panel-tabset
 ## Intercropping 101
 
 ```{r}
@@ -30,7 +29,7 @@ knitr::include_graphics(here::here("shiny","www","illustration_intercropping.png
 
 Schematic illustrations and examples of alternative intercropping strategies.
 
-a.  **Strip intercropping:** both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability
+a.  **Strip intercropping:** both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability.
 
 b.  **Relay strip intercropping:** one crop is planted in strips and another is sown into those strips before the first crop is harvested, allowing for temporal overlap and efficient land use.
 
@@ -60,16 +59,45 @@ j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 **Principal Component Analysis:** Compare which factors in the intercropping experiments played the largest role. How does intercropping in China compare to the rest of the world? Which experiment variable contributed most to LER performance?
 
-
 ## Definitions
 
-**Land Equivalent Ratio:** 
+**Land Equivalent Ratio:**
 
-**loadings placeholder:** 
+**loadings placeholder:**
 
+[**Principal Component Analysis Loadings**]{.underline}
+
+**Experimental site soil and climate conditions**
+
+a.  China: if experiment was conducted in China
+
+b.  Latitude: latitude of experimental site
+
+c.  Rest of World: if experiment was conducted outside of China
+
+**Intercropping design descriptors**
+
+a.  Additive design: adding intercrop plants to a base crop without reducing the base crop's population
+
+b.  Replacement design: replacing some of the base crop plants with intercrop plants
+
+c.  Strip pattern: both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability
+
+d.  Row pattern: two crops are planted in alternating rows within the same field to optimize resource use, enhance biodiversity, and improve yield stability
+
+e.  Mixed pattern: two crops are grown together in the same field without a distinct row arrangement, allowing for natural plant interactions that optimize resource use and enhance biodiversity
+
+f.  AF (Agroforestry) pattern: Rows of trees and/or shrubs are planted to create alleys within which agricultural or horticultural crops are grow
+
+**Crop and yield variables**
+
+a.  LER: total Land Equivalent Ratio as provided by authors
+
+b.  Maize: if either of the crops was maize (corn)
+
+c.  No Maize: if neither of the crops was maize (corn)
 
 ## Data and Citations
-
 
 Data is derived from a comprehensive meta-analysis of global intercropping experiments. All observations are from field experiments published worldwide from 1982 and 2022. Included in the data are (i) general information on the experiments; (ii) experimental site soil and climate conditions; (iii) descriptions of intercropping designs; (iv) crop management practices; (v) measurements of sole crop and intercrop yields and (vi) Land Equivalent Ratios.
 
@@ -84,4 +112,3 @@ Data is derived from a comprehensive meta-analysis of global intercropping exper
 -   Corn and Soy photo: Courtesy of Zoe Sims 2024
 
 -   Intercropping diagram: Li C. et al. (2020). Nature Plants
-:::
