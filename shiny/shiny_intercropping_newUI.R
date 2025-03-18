@@ -434,13 +434,9 @@ ui <- fluidPage(
                       width = 12,
                       fluidRow(
                         # First plot (PCA plot)
-                        column(10, offset = 0, 
+                        column(12, offset = 0, 
                                tags$div(
-<<<<<<< HEAD
-=======
                                  style = "padding: 5px; border-radius: 10px; background-color: #f0f2f5;",
-                                 
->>>>>>> e5c058afca8b5f98b0f42ca057573e6db88ef85f
                                  plotOutput('PCA_plot', width = "100%", height = "500px"),
                                  
                                  wellPanel(
