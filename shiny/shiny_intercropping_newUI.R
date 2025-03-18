@@ -436,6 +436,11 @@ ui <- fluidPage(
                         # First plot (PCA plot)
                         column(10, offset = 0, 
                                tags$div(
+<<<<<<< HEAD
+=======
+                                 style = "padding: 5px; border-radius: 10px; background-color: #f0f2f5;",
+                                 
+>>>>>>> e5c058afca8b5f98b0f42ca057573e6db88ef85f
                                  plotOutput('PCA_plot', width = "100%", height = "500px"),
                                  
                                  wellPanel(
@@ -446,12 +451,14 @@ ui <- fluidPage(
                                ),
                                
                                tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
+                               tags$hr(style = "border-top: 2px black; margin: 30px 0;")  # Adds separation line
                         ),
                         
                         # Second plot (pct_var_PCA)
                         column(10, offset = 0, 
                                tags$div(
                                  style = "padding: 5px; border-radius: 10px; background-color: white;",
+                                 style = "padding: 5px; border-radius: 10px; background-color: #f0f2f5;",
                                  
                                  # Title for the second plot
                                  tags$h3("Percentage of Variance Explained", style = "text-align: center; color: black;"),
@@ -694,6 +701,18 @@ server <- function(input,output, session){
       scale_color_viridis(discrete = TRUE) +   
       theme_classic() +
       theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      ) +
+      theme(
         text = element_text(size = 12, family = "Lato"),  
         axis.text = element_text(size = 12),
         axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  
@@ -710,6 +729,18 @@ server <- function(input,output, session){
       geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
       labs(x = 'Principal component', y = 'Variance explained')+
       theme_classic()+
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      ) +
       theme(
         text = element_text(size = text_size, family = "Lato"),  # Change all text size
         axis.text = element_text(size = text_size),
