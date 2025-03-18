@@ -396,7 +396,13 @@ ui <- fluidPage(
                                  # Title for the first plot
                                  tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
                                  
-                                 plotOutput('PCA_plot', width = "100%", height = "500px")
+                                 plotOutput('PCA_plot', width = "100%", height = "500px"),
+                                 
+                                 wellPanel(
+                                   h4("PCA Results Summary"),
+                                   p("Above is a Principal Component Analysis (PCA) biplot showing the distribution of observations based on the two principal components of your choosing. The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component."),
+                                   p("The percentage of variance explained by each PC is indicated on the axes. This analysis suggests a potential correlation between specific features and groupings in the data."),
+                                   )
                                ),
                                
                                tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
