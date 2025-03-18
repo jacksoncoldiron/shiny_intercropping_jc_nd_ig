@@ -444,7 +444,7 @@ ui <- fluidPage(
                                    h4("PCA Results Summary"),
                                    p("Above is a Principal Component Analysis (PCA) biplot showing the distribution of experiments and the linear relationship between experimental variables based on the two principal components of your choosing."),
                                    p("Using a biplot, we reduce a multidimensional relationship into two-dimensional space. The biplot shows us 1. The loading (eigenvalues) of experimental variables for two PCs (grey arrows) and 2. The distribution of experiments based on those PCs."),
-                                   p("The plot reveals the clustering of experiments color-coded by continent as well as the correlation between the relative loadings of each principle component."),
+                                   p("The plot showcases the clustering of experiments color-coded by continent as well as the correlation between the relative loadings of each principle component."),
                                    p("The percentage of variance explained by each PC is indicated on the axes. The length of each arrow indicates the variance associated with a PC direction and the angle between arrows reveals their correlation."),
                                    )
                                ),
