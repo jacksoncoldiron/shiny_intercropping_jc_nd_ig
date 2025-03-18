@@ -717,12 +717,12 @@ server <- function(input,output, session){
       )
   })
  
-  output$PCA_var<-renderPlot({
-    ggplot(pct_expl_df, aes(x = pc, y = v)) +
-      geom_col() +
+  output$PCA_var <- renderPlot({
+    ggplot(pct_expl_df, aes(x = pc, y = v, fill = v)) +
+      geom_col(fill = viridis(1, option = "C")[1]) +  # Use light blue from viridis palette
       geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
-      labs(x = 'Principal component', y = 'Variance explained')+
-      theme_classic()+
+      labs(x = 'Principal component', y = 'Variance explained') +
+      theme_classic() +
       theme(
         panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
         plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
@@ -736,13 +736,13 @@ server <- function(input,output, session){
         legend.title = element_text(size = text_size, color = "black", face = "bold")
       ) +
       theme(
-        text = element_text(size = text_size, family = "Lato"),  # Change all text size
-        axis.text = element_text(size = text_size),
-        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
-        axis.title = element_text(size = text_size, family = "Open Sans"),  # Axis titles
-        legend.text = element_text(size = text_size),
+        text = element_text(size = 12, family = "Lato"),  
+        axis.text = element_text(size = 12),
+        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  
+        axis.title = element_text(size = 12, family = "Open Sans"),  
+        legend.text = element_text(size = 12),
         axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
-        legend.title = element_text(size = text_size, face = "bold")
+        legend.title = element_text(size = 12, face = "bold")
       )
   })
   
