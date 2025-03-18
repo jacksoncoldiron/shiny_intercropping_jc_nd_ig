@@ -52,7 +52,7 @@ yeti_theme <- bs_theme(bootswatch = "yeti") |>
   )
 
 ### Declare global plot variables
-text_size <- 20
+text_size <- 16
 point_size <- 3
 
 # Using theme_classic
@@ -190,9 +190,10 @@ ui <- fluidPage(
       .main-header .sidebar-toggle {
         height: 80px !important;
         line-height: 80px !important;
-        padding: 10px 15px !important; /* Fine-tune spacing */
-        margin-left: 0px !important;
-        display: flex !important; /* Ensures proper alignment */
+        padding: -1000px 500px !important; /* Fine-tune spacing */
+        display: flex !important;
+        margin-right: 2000px !important;
+        margin-bottom: 2000px !important;
         align-items: center !important;
       }
 
@@ -219,7 +220,7 @@ ui <- fluidPage(
   # load page layout
   dashboardPage(
     
-    skin = "green",
+    skin = "blue",
     
     dashboardHeader(
       title = "Intercropping Around the World",  
@@ -289,8 +290,7 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = 'map',
-          # species data section
-          titlePanel(""),
+          titlePanel("Click a country to learn more!"),
           sidebarLayout(
             position = "right",
             sidebarPanel(
@@ -299,7 +299,6 @@ ui <- fluidPage(
               style = "padding: 10px; margin: 0px; width: 100%;"
             ),
             mainPanel(
-              titlePanel("Click a Country to learn more!"),
               width = 9,  
               style = "padding-left: 0px; margin-left: 0px",
               fluidRow(
@@ -310,6 +309,7 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = "LER_comp", 
+            titlePanel("Choose two crops to compare their relative LER"),
             sidebarLayout(
               sidebarPanel(
                 width = 6,
@@ -368,36 +368,43 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = "pca",
-                mainPanel(
-                    width = 12,
-                    fluidRow(
-                      # First plot (PCA plot)
-                      column(10, offset = 0, 
-                             tags$div(
-                               style = "padding: 5px; border-radius: 10px; background-color: white;",
+                titlePanel("Explore a Principal Component Analysis of the data"),
+                sidebarLayout(
+                  sidebarPanel(
+                    
+                    
+                  ),
+                  mainPanel(
+                      width = 12,
+                      fluidRow(
+                        # First plot (PCA plot)
+                        column(10, offset = 0, 
+                               tags$div(
+                                 style = "padding: 5px; border-radius: 10px; background-color: white;",
+                                 
+                                 # Title for the first plot
+                                 tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
+                                 
+                                 plotOutput('PCA_plot', width = "100%", height = "500px")
+                               ),
                                
-                               # Title for the first plot
-                               tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
-                               
-                               plotOutput('PCA_plot', width = "100%", height = "500px")
-                             ),
-                             
-                             tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
-                      ),
-                      
-                      # Second plot (pct_var_PCA)
-                      column(10, offset = 0, 
-                             tags$div(
-                               style = "padding: 5px; border-radius: 10px; background-color: white;",
-                               
-                               # Title for the second plot
-                               tags$h3("Percentage of Variance Explained", style = "text-align: center; color: black;"),
-                               
-                               plotOutput('PCA_var', width = "100%", height = "500px")
-                             )
+                               tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
+                        ),
+                        
+                        # Second plot (pct_var_PCA)
+                        column(10, offset = 0, 
+                               tags$div(
+                                 style = "padding: 5px; border-radius: 10px; background-color: white;",
+                                 
+                                 # Title for the second plot
+                                 tags$h3("Percentage of Variance Explained", style = "text-align: center; color: black;"),
+                                 
+                                 plotOutput('PCA_var', width = "100%", height = "500px")
+                               )
+                        )
                       )
                     )
-                  )
+                )
         )
       ) # end tab items
     ) # end dashboardBody
@@ -564,6 +571,7 @@ server <- function(input,output, session){
   output$PCA_plot<-renderPlot({
     autoplot(intercrop_pca_scale,
              data = intercrop_pca_data_clean,
+             x=3, y=4, 
              loadings = TRUE,
              colour = 'Continent',
              loadings.label = TRUE,

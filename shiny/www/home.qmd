@@ -9,8 +9,12 @@ execute:
 Intercropping is an agricultural practice where two crop species are grown together in the same field to maximize resource use and improve productivity. It enhances biodiversity, reduces pest pressure, and can improve soil health by optimizing nutrient cycling.
 
 ```{r}
+#| echo: false
+#| out.width: '100%'
+#| out.height: "auto"
 knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 ```
+
 <small>*Corn and soy intercropped in the Gansu province of China.*</small>
 
 ::: panel-tabset
@@ -18,7 +22,7 @@ knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 
 ```{r}
 #| echo: false
-#| out.width: "80%"
+#| out.width: "100%"
 #| out.height: "auto"
 
 knitr::include_graphics(here::here("shiny","www","illustration_intercropping.png"))
@@ -26,27 +30,27 @@ knitr::include_graphics(here::here("shiny","www","illustration_intercropping.png
 
 Schematic illustrations and examples of alternative intercropping strategies.
 
-a. **Strip intercropping:** both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability
+a.  **Strip intercropping:** both species grown simultaneously with alternating strips wide enough for separate management but close enough to interact beneficially, improving soil health, pest control, and overall yield stability
 
-b. **Relay strip intercropping:** one crop is planted in strips and another is sown into those strips before the first crop is harvested, allowing for temporal overlap and efficient land use.
+b.  **Relay strip intercropping:** one crop is planted in strips and another is sown into those strips before the first crop is harvested, allowing for temporal overlap and efficient land use.
 
-c. **Alternate-row intercropping:** two crops are planted in alternating rows within the same field to optimize resource use, enhance biodiversity, and improve yield stability.
+c.  **Alternate-row intercropping:** two crops are planted in alternating rows within the same field to optimize resource use, enhance biodiversity, and improve yield stability.
 
-d. **Mixed intercropping** two crops are grown together in the same field without a distinct row arrangement, allowing for natural plant interactions that optimize resource use and enhance biodiversity.
+d.  **Mixed intercropping** two crops are grown together in the same field without a distinct row arrangement, allowing for natural plant interactions that optimize resource use and enhance biodiversity.
 
-e. A mini tractor sowing soybean and applying fertilizer in maize/soybean relay strip intercropping.
+e.  A mini tractor sowing soybean and applying fertilizer in maize/soybean relay strip intercropping.
 
-f. Relay strip intercropping of maize and soybean.
+f.  Relay strip intercropping of maize and soybean.
 
-g. A soybean harvester working in a soybean strip in Southwest China.
+g.  A soybean harvester working in a soybean strip in Southwest China.
 
-h. Alternate-row intercropping of durum wheat and winter pea in France.
+h.  Alternate-row intercropping of durum wheat and winter pea in France.
 
-i. Mixed lentil/spring wheat intercropping at harvest.
+i.  Mixed lentil/spring wheat intercropping at harvest.
 
-j. Mechanical harvest of mixed lentil/spring wheat intercropping in France.
+j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
-## App Guide
+## Site Overview
 
 **Intercropping by Continent:** Explore intercropping experiments over the years. Choose your own continents and time frames!
 
@@ -56,7 +60,16 @@ j. Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 **Principal Component Analysis:** Compare which factors in the intercropping experiments played the largest role. How does intercropping in China compare to the rest of the world? Which experiment variable contributed most to LER performance?
 
-## Data
+
+## Definitions
+
+**Land Equivalent Ratio:** 
+
+**loadings placeholder:** 
+
+
+## Data and Citations
+
 
 Data is derived from a comprehensive meta-analysis of global intercropping experiments. All observations are from field experiments published worldwide from 1982 and 2022. Included in the data are (i) general information on the experiments; (ii) experimental site soil and climate conditions; (iii) descriptions of intercropping designs; (iv) crop management practices; (v) measurements of sole crop and intercrop yields and (vi) Land Equivalent Ratios.
 
@@ -66,10 +79,9 @@ Data is derived from a comprehensive meta-analysis of global intercropping exper
 
 **Images**:
 
-- Corn and Wheat logo: Courtesy of pngtree.com
+-   Corn and Wheat logo: Courtesy of pngtree.com
 
-- Corn and Soy photo: Courtesy of Zoe Sims 2024
+-   Corn and Soy photo: Courtesy of Zoe Sims 2024
 
-- Intercropping diagram: Li C. et al. (2020). Nature Plants
-
+-   Intercropping diagram: Li C. et al. (2020). Nature Plants
 :::
