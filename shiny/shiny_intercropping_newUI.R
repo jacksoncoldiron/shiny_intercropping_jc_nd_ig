@@ -419,13 +419,13 @@ ui <- fluidPage(
                       column(5, offset = 0,
                         selectInput("pc_select_1", 
                                     label = "Select First Principal Component", 
-                                    choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                    choices = paste("PC", 1:6, sep = ""),
                                     selected = "PC1")
                       ),
                       column(5, offset = 1,  
                         selectInput("pc_select_2", 
                                     label = "Select Second Principal Component", 
-                                    choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                    choices = paste("PC", 1:6, sep = ""),
                                     selected = "PC2")
                       )
                     )
