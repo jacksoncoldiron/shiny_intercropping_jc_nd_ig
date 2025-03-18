@@ -17,6 +17,7 @@ knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 
 <small>*Corn and soy intercropped in the Gansu province of China.*</small>
 
+:::panel-tabset
 ## Intercropping 101
 
 ```{r}
@@ -62,8 +63,6 @@ j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 ## Definitions
 
 **Land Equivalent Ratio:**
-
-**loadings placeholder:**
 
 [**Principal Component Analysis Loadings**]{.underline}
 
@@ -112,3 +111,4 @@ Data is derived from a comprehensive meta-analysis of global intercropping exper
 -   Corn and Soy photo: Courtesy of Zoe Sims 2024
 
 -   Intercropping diagram: Li C. et al. (2020). Nature Plants
+:::
