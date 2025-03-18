@@ -450,14 +450,12 @@ ui <- fluidPage(
                                    )
                                ),
                                
-                               tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
                                tags$hr(style = "border-top: 2px black; margin: 30px 0;")  # Adds separation line
                         ),
                         
                         # Second plot (pct_var_PCA)
                         column(10, offset = 0, 
                                tags$div(
-                                 style = "padding: 5px; border-radius: 10px; background-color: white;",
                                  style = "padding: 5px; border-radius: 10px; background-color: #f0f2f5;",
                                  
                                  # Title for the second plot
