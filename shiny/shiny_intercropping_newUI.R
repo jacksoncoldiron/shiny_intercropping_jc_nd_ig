@@ -539,7 +539,7 @@ server <- function(input,output, session){
         colours = c("grey90", viridisLite::viridis(5)),
         values = scales::rescale(c(0, 1, max(map_data2$count, na.rm = TRUE))),
         limits = c(0, max(map_data2$count, na.rm = TRUE)),
-        name = ""
+        name = "Count"
       ) +
       theme_minimal() +
       theme(
