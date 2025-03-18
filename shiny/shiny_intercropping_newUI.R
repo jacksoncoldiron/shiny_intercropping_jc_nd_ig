@@ -15,8 +15,6 @@ library(png)
 library(shinydashboard)
 library(shinycssloaders)
 
-# test
-
 
 showtext_auto()
 
@@ -265,7 +263,23 @@ ui <- fluidPage(
     
     dashboardSidebar(width = 320,
                      sidebarMenu(id = 'selected_tab',
-                       tags$img(src = "corn_wheat.png", width = 300),
+                                 # Add margin-top to move the logo down
+                                 tags$style(HTML("
+                               .logo-center {
+                                 display: flex;
+                                 justify-content: center;
+                                 align-items: center;
+                                 margin-top: 25px; /* Adjust this value as needed */
+                                 margin-bottom: 10px;
+                               }
+                               .logo-img {
+                                 width: 200px; /* Adjust the size as needed */
+                               }
+                             ")),
+                                 # Wrap the logo in a div with the 'logo-center' class
+                                 div(class = "logo-center", 
+                                     tags$img(src = "test_logo.png", class = "logo-img")
+                                 ),
                        menuItem("Home", tabName = "home", icon = icon("home"), selected = TRUE), # selected TRUE not working
                        menuItem("Intercropping by Continent", tabName = "continent", icon = icon("thumbtack")),
                        menuItem("Map of Experiments", tabName = "map", icon = icon("map marked alt")),
