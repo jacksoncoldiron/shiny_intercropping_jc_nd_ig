@@ -146,6 +146,9 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
   select(-Continent)|>
   prcomp(scale.=TRUE)
 
+# Create a data frame with the PCA scores
+pca_df <- data.frame(intercrop_pca_scale$x)
+
 # % Variance Explained setup code
 pc_names <- colnames(intercrop_pca_scale$rotation)
 sd_vec <- intercrop_pca_scale$sdev
@@ -396,9 +399,17 @@ ui <- fluidPage(
                 titlePanel("Explore a Principal Component Analysis of the data"),
                 sidebarLayout(
                   sidebarPanel(
+                    selectInput("pc_select_1", 
+                                label = "Select First Principal Component", 
+                                choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                selected = "PC1"),
                     
-                    
+                    selectInput("pc_select_2", 
+                                label = "Select Second Principal Component", 
+                                choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                selected = "PC2")
                   ),
+                  
                   mainPanel(
                       width = 12,
                       fluidRow(
@@ -410,7 +421,13 @@ ui <- fluidPage(
                                  # Title for the first plot
                                  tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
                                  
-                                 plotOutput('PCA_plot', width = "100%", height = "500px")
+                                 plotOutput('PCA_plot', width = "100%", height = "500px"),
+                                 
+                                 wellPanel(
+                                   h4("PCA Results Summary"),
+                                   p("Above is a Principal Component Analysis (PCA) biplot showing the distribution of observations based on the two principal components of your choosing. The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component."),
+                                   p("The percentage of variance explained by each PC is indicated on the axes. This analysis suggests a potential correlation between specific features and groupings in the data."),
+                                   )
                                ),
                                
                                tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
@@ -617,11 +634,35 @@ server <- function(input,output, session){
   })
   
   #### Tab: PCA ####
+  filtered_pca_scale <- reactive({
+    # Extract the selected PCs
+    selected_pc_1 <- as.numeric(gsub("PC", "", input$pc_select_1))  # Extract the first selected PC
+    selected_pc_2 <- as.numeric(gsub("PC", "", input$pc_select_2))  # Extract the second selected PC
+    
+    list(selected_pc_1 = selected_pc_1, selected_pc_2 = selected_pc_2)
+  })
   
-  output$PCA_plot<-renderPlot({
-    autoplot(intercrop_pca_scale,
+  # Update the available choices for the second PC when the first PC is selected
+  observe({
+    # Get the currently selected PC1
+    selected_pc_1 <- as.numeric(gsub("PC", "", input$pc_select_1))
+    
+    # Update the choices for the second PC to exclude the first selected PC
+    updateSelectInput(session, "pc_select_2", 
+                      choices = setdiff(paste("PC", 1:10, sep = ""), paste("PC", selected_pc_1, sep = "")),
+                      selected = paste("PC", ifelse(selected_pc_1 == 1, 2, 1), sep = ""))
+  })
+  
+  # Render the plot based on selected PCs
+  output$PCA_plot <- renderPlot({
+    # Get the selected PCs from the reactive expression
+    selected_pc <- filtered_pca_scale()
+    
+    # Use autoplot to plot the selected PCs
+    autoplot(intercrop_pca_scale, 
              data = intercrop_pca_data_clean,
-             x=3, y=4, 
+             x = selected_pc$selected_pc_1, 
+             y = selected_pc$selected_pc_2, 
              loadings = TRUE,
              colour = 'Continent',
              loadings.label = TRUE,
@@ -629,22 +670,22 @@ server <- function(input,output, session){
              loadings.label.colour = "black",
              loadings.label.repel = TRUE,
              loadings.label.fontface = "bold",  
-             force = 10,  # Adjust force for better label repulsion
-             max.iter = 1000,  # Increase number of iterations for better optimization
-             box.padding = 0.5,  # Increase box padding for labels
-             nudge_x = 0.1,  # Adjust nudge values if necessary
+             force = 10,  
+             max.iter = 1000,  
+             box.padding = 0.5,  
+             nudge_x = 0.1,  
              nudge_y = 0.1
     ) +
-      scale_color_viridis(discrete = TRUE) +   # Apply the Viridis color palette
+      scale_color_viridis(discrete = TRUE) +   
       theme_classic() +
       theme(
-        text = element_text(size = text_size, family = "Lato"),  # Change all text size
-        axis.text = element_text(size = text_size),
-        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
-        axis.title = element_text(size = text_size, family = "Open Sans"),  # Axis titles
-        legend.text = element_text(size = text_size),
+        text = element_text(size = 12, family = "Lato"),  
+        axis.text = element_text(size = 12),
+        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  
+        axis.title = element_text(size = 12, family = "Open Sans"),  
+        legend.text = element_text(size = 12),
         axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
-        legend.title = element_text(size = text_size, face = "bold")
+        legend.title = element_text(size = 12, face = "bold")
       )
   })
  
