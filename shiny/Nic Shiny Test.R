@@ -14,6 +14,8 @@ library(showtext)
 library(png)
 library(shinydashboard)
 library(shinycssloaders)
+library(shinyjs)
+
 
 
 
@@ -52,7 +54,7 @@ yeti_theme <- bs_theme(bootswatch = "yeti") |>
   )
 
 ### Declare global plot variables
-text_size <- 20
+text_size <- 16
 point_size <- 3
 
 # Using theme_classic
@@ -146,9 +148,8 @@ intercrop_pca_scale<-intercrop_pca_data_clean|>
   select(-Continent)|>
   prcomp(scale.=TRUE)
 
-# extract PC names
-pc_names <- colnames(intercrop_pca_scale$x)
-
+# Create a data frame with the PCA scores
+pca_df <- data.frame(intercrop_pca_scale$x)
 
 # % Variance Explained setup code
 pc_names <- colnames(intercrop_pca_scale$rotation)
@@ -168,9 +169,36 @@ pct_expl_df<-pct_expl_df|>
 
 ui <- fluidPage(
   
+  ### Attempting to load home tab first ###
+  useShinyjs(),
+  
   ### declare css styling ### 
   tags$head(
     tags$style(HTML("
+        /* Change the background color of the whole page */
+    body {
+      background-color: #f0f2f5 !important; /* #f0f2f5 Light gray */
+    }
+
+    /* Sidebar background color */
+    .main-sidebar {
+      background-color: #2c3e50 !important; /* Dark blue-gray */
+    }
+    
+        /* Sidebar text color */
+    .sidebar-menu > li > a {
+      color: white !important;
+    }
+    
+        /* Change background color of tab panels */
+    .tab-content {
+      background-color: #f0f2f5 !important;
+      padding: 20px !important;
+      border-radius: 10px !important;
+    }
+
+
+    
       /* Ensure header title bar and sidebar toggle button are the same height */
       .main-header .logo {
         height: 80px !important;
@@ -194,9 +222,10 @@ ui <- fluidPage(
       .main-header .sidebar-toggle {
         height: 80px !important;
         line-height: 80px !important;
-        padding: 10px 15px !important; /* Fine-tune spacing */
-        margin-left: 0px !important;
-        display: flex !important; /* Ensures proper alignment */
+        padding: -1000px 500px !important; /* Fine-tune spacing */
+        display: flex !important;
+        margin-right: 2000px !important;
+        margin-bottom: 2000px !important;
         align-items: center !important;
       }
 
@@ -210,9 +239,18 @@ ui <- fluidPage(
       .sidebar-menu > li > a {
         font-size: 20px !important;
       }
+      
+      /* Increase font size of the numbers on the slider */
+      .irs-grid-text {
+        font-size: 20px !important;  /* Adjust as needed */
+      }
+
+      /* Increase font size for the selected value */
+      .irs-single, .irs-from, .irs-to {
+        font-size: 20px !important;
+      }
     "))
   ),
-  
   
   # remove shiny "red" warning messages on GUI
   # tags$style(type="text/css",
@@ -223,7 +261,7 @@ ui <- fluidPage(
   # load page layout
   dashboardPage(
     
-    skin = "green",
+    skin = "blue",
     
     dashboardHeader(
       title = "Intercropping Around the World",  
@@ -232,8 +270,24 @@ ui <- fluidPage(
     
     dashboardSidebar(width = 320,
                      sidebarMenu(id = 'selected_tab',
-                                 tags$img(src = "corn_wheat.png", width = 300),
-                                 menuItem("Home", tabName = "home", icon = icon("home"), selected = TRUE), # selected TRUE not working
+                                 # Add margin-top to move the logo down
+                                 tags$style(HTML("
+                               .logo-center {
+                                 display: flex;
+                                 justify-content: center;
+                                 align-items: center;
+                                 margin-top: 25px; /* Adjust this value as needed */
+                                 margin-bottom: 10px;
+                               }
+                               .logo-img {
+                                 width: 200px; /* Adjust the size as needed */
+                               }
+                             ")),
+                                 # Wrap the logo in a div with the 'logo-center' class
+                                 div(class = "logo-center", 
+                                     tags$img(src = "test_logo.png", class = "logo-img")
+                                 ),
+                                 menuItem("Home", tabName = "home", icon = icon("home")), # selected TRUE not working
                                  menuItem("Intercropping by Continent", tabName = "continent", icon = icon("thumbtack")),
                                  menuItem("Map of Experiments", tabName = "map", icon = icon("map marked alt")),
                                  menuItem("LER by Crop Types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
@@ -259,8 +313,9 @@ ui <- fluidPage(
                 includeHTML("www/home.html")
                 
         ),
+        
         tabItem(tabName = "continent",
-                titlePanel("Experiments over time for Continents of your choosing!"),
+                titlePanel("Experiments over time for continents of your choosing!"),
                 sidebarLayout(
                   position = "left",
                   sidebarPanel(
@@ -273,19 +328,23 @@ ui <- fluidPage(
                   
                   # Plotting the cumulative experiments over time
                   mainPanel(
-                    fluidRow(
-                      column(12, plotOutput("plotCumulative")),
-                      column(8, offset = 1, 
-                             sliderInput("yearRange", "Select Year Range:",
-                                         label = tags$span("Select Year Range:", style = "font-size: 20px; font-weight: bold;"),
-                                         min = min(cumulative$year),
-                                         max = 2025,
-                                         value = c(min(cumulative$year), max(cumulative$year)),
-                                         step = 1,
-                                         sep = "",
-                                         width = "100%",
-                             ),
-                             width = 9
+                    width = 9,
+                    tags$div(
+                      style = "padding: 5px; border-radius: 10px; background-color: #f0f2f5;",
+                      fluidRow(
+                        column(12, offset = 0,
+                               plotOutput("plotCumulative")
+                        ),
+                        column(8, offset = 1, 
+                               sliderInput("yearRange", "",
+                                           min = min(cumulative$year),
+                                           max = 2025,
+                                           value = c(min(cumulative$year), max(cumulative$year)),
+                                           step = 1,
+                                           sep = "",
+                                           width = "89%",
+                               )
+                        )
                       )
                     )
                   )
@@ -293,8 +352,7 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = 'map',
-                # species data section
-                titlePanel(""),
+                titlePanel("Click a country to learn more!"),
                 sidebarLayout(
                   position = "right",
                   sidebarPanel(
@@ -303,7 +361,6 @@ ui <- fluidPage(
                     style = "padding: 10px; margin: 0px; width: 100%;"
                   ),
                   mainPanel(
-                    titlePanel("Click a Country to learn more!"),
                     width = 9,  
                     style = "padding-left: 0px; margin-left: 0px",
                     fluidRow(
@@ -314,6 +371,7 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = "LER_comp", 
+                titlePanel("Choose two crops to compare their relative LER"),
                 sidebarLayout(
                   sidebarPanel(
                     width = 6,
@@ -343,28 +401,15 @@ ui <- fluidPage(
                     fluidRow(
                       # First plot (LER_plot)
                       column(10, offset = 0, 
-                             tags$div(
-                               style = "padding: 5px; border-radius: 10px; background-color: white;",
-                               
-                               # Title for the first plot
-                               tags$h3("LER Comparison by Crop Type", style = "text-align: center; color: black;"),
-                               
-                               plotOutput('LER_plot', width = "100%", height = "500px")
-                             ),
-                             
+                             plotOutput('LER_plot', width = "100%", height = "500px"),
                              tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
                       ),
                       
                       # Second plot (crop1_exp_over_time_plot)
                       column(10, offset = 0, 
-                             tags$div(
-                               style = "padding: 5px; border-radius: 10px; background-color: white;",
-                               
-                               # Title for the second plot
-                               tags$h3("Cumulative Experiments of Crop 1 Over Time", style = "text-align: center; color: black;"),
-                               
-                               plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px")
-                             )
+                             # Title for the second plot
+                             tags$h3("Cumulative Experiments of Crop 1 Over Time", style = "text-align: center; color: black;"),
+                             plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px")
                       )
                     )
                   )
@@ -372,38 +417,50 @@ ui <- fluidPage(
         ),
         
         tabItem(tabName = "pca",
+                titlePanel("Explore a Principal Component Analysis of the data"),
                 sidebarLayout(
                   sidebarPanel(
                     width = 6,
-                    fluidRow(column(6,selectInput(
-                      inputId = "PC_A",
-                      label = "PC A:",
-                      selected = 'PC1',
-                      choices = pc_names
-                    )
-                    ),
-                    
-                    column(6, 
-                           selectInput(
-                             inputId = "PC_B",
-                             label = "PC B:",
-                             selected = 'PC2',
-                             choices = pc_names
-                           )
-                    )
+                    fluidRow(
+                      column(6,
+                             selectInput("pc_select_1", 
+                                         label = "Select First Principal Component", 
+                                         choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                         selected = "PC1"),
+                      ),
+                      
+                      column(6,
+                             selectInput("pc_select_2", 
+                                         label = "Select Second Principal Component", 
+                                         choices = paste("PC", 1:ncol(pca_df), sep = ""),
+                                         selected = "PC2"
+                             )
+                      )
                     )
                   ),
+                  
+                  
                   
                   mainPanel(
                     width = 12,
                     fluidRow(
-                      # PCA plot
+                      # First plot (PCA plot)
                       column(10, offset = 0, 
                              tags$div(
                                style = "padding: 5px; border-radius: 10px; background-color: white;",
+                               
+                               # Title for the first plot
                                tags$h3("Principal Component Analysis", style = "text-align: center; color: black;"),
-                               plotOutput('PCA_plot', width = "100%", height = "500px")
+                               
+                               plotOutput('PCA_plot', width = "100%", height = "500px"),
+                               
+                               wellPanel(
+                                 h4("PCA Results Summary"),
+                                 p("Above is a Principal Component Analysis (PCA) biplot showing the distribution of observations based on the two principal components of your choosing. The plot reveals the clustering of samples color-coded by continent as well as the correlation between the relative loadings of each principle component."),
+                                 p("The percentage of variance explained by each PC is indicated on the axes. This analysis suggests a potential correlation between specific features and groupings in the data."),
+                               )
                              ),
+                             
                              tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
                       ),
                       
@@ -413,7 +470,7 @@ ui <- fluidPage(
                                style = "padding: 5px; border-radius: 10px; background-color: white;",
                                
                                # Title for the second plot
-                               tags$h3("Percentage of Variance Explained", style = "text-align: center; color: black;"),
+                               tags$h3("Percentage of Variance Explained by PCs", style = "text-align: center; color: black;"),
                                
                                plotOutput('PCA_var', width = "100%", height = "500px")
                              )
@@ -421,342 +478,403 @@ ui <- fluidPage(
                     )
                   )
                 )
-        ) # end tab items
-      ) # end dashboardBody
-    ) # end dashboardPage
-  ) # end shiny fluid page
+        )
+      ) # end tab items
+    ) # end dashboardBody
+  ) # end dashboardPage
+) # end shiny fluid page
+
+### create the server function (where all the magic happens from data analysis) ### 
+# Year range slider for user to select the year range
+server <- function(input,output, session){
   
-  ### create the server function (where all the magic happens from data analysis) ### 
-  # Year range slider for user to select the year range
-  server <- function(input,output, session){
-    
-    
-    ### Tab 1: Experiments Overview ###
-    filteredData <- reactive({
-      cumulative |>
-        filter(year >= input$yearRange[1],
-               year <= input$yearRange[2],
-               year <= 2025,
-               continent %in% input$continent)
-    })
-    
-    # Create the plot for experiments over time
-    output$plotCumulative <- renderPlot({
-      ggplot(filteredData(), aes(x = year, y = cumulative_experiments, 
-                                 color = continent, group = continent)) +
-        geom_line() +
-        geom_point(size = 1) +
-        theme_classic() +
-        theme(
-          text = element_text(size = text_size, family = "Lato"),              # Change all text size
-          axis.text = element_text(size = text_size),  
-          axis.text.y = element_text(family = "Open Sans"),# Axis tick labels
-          axis.title = element_text(size = text_size, family = "Open Sans"),        # Axis titles
-          legend.text = element_text(size = text_size), 
-          axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"), 
-          legend.title = element_text(size = text_size, face = "bold")) +
-        scale_color_viridis_d(option = "viridis") +
-        scale_x_continuous(
-          breaks = seq(
-            from = min(cumulative$year, na.rm = TRUE),  
-            to = 2025, 
-            by = 5
-          )
-        ) +
-        labs(x = "Year", 
-             y = "Cumulative Experiments",
-             color = NULL)
+  # Set "home" tab as the default when the app starts
+  observe({
+    # Delay the update to allow UI components to fully load
+    runjs('$(".sidebar-menu li:eq(0) a").click();')  # This simulates a click on the "Home" tab
+  })
+  
+  ### Tab 1: Experiments Overview ###
+  filteredData <- reactive({
+    cumulative |>
+      filter(year >= input$yearRange[1],
+             year <= input$yearRange[2],
+             year <= 2025,
+             continent %in% input$continent)
+  })
+  
+  # Create the plot for experiments over time
+  output$plotCumulative <- renderPlot({
+    ggplot(filteredData(), aes(x = year, y = cumulative_experiments, 
+                               color = continent, group = continent)) +
+      geom_line() +
+      geom_point(size = 1) +
+      theme_classic() +
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
       
-    })
-    
-    ### Tab 1A: Interactive Map ###
-    output$interactive_map <- renderPlotly({
-      p <- ggplot(map_data2) +
-        geom_sf(aes(fill = count), color = "gray40") +
-        scale_fill_gradientn(
-          colours = c("grey90", viridisLite::viridis(5)),
-          values = scales::rescale(c(0, 1, max(map_data2$count, na.rm = TRUE))),
-          limits = c(0, max(map_data2$count, na.rm = TRUE)),
-          name = ""
-        ) +
-        theme_minimal() +
-        theme(plot.margin = margin(0, 0, 0, 0)) +
-        labs(title = "", x = "", y  = "")
-      
-      ggplotly(p) |>
-        event_register("plotly_click")
-    })
-    
-    # Display country info
-    output$country_info <- renderUI({
-      click <- event_data("plotly_click")
-      
-      print(click)
-      
-      # Check if click data is valid
-      if (is.null(click) || !("x" %in% names(click)) || !("y" %in% names(click))) {
-        print("No country selected")
-        return(NULL)
-      }
-      
-      clicked_long <- click$x  # Extract longitude
-      clicked_lat <- click$y   # Extract latitude
-      
-      print(paste("Clicked coordinates: ", clicked_long, clicked_lat))
-      
-      # Ensure correct CRS
-      if (st_crs(map_data2)$epsg != 4326) {
-        map_data2 <- st_transform(map_data2, crs = 4326)
-      }
-      
-      
-      # Find the Country Name from Coordinates
-      clicked_point <- st_sfc(st_point(c(clicked_long, clicked_lat)), crs = 4326)
-      nearest_country_index <- tryCatch(
-        st_nearest_feature(clicked_point, map_data2),
-        error = function(e) NA)
-      
-      # Check if a valid country was found
-      if (is.na(nearest_country_index) || nearest_country_index > nrow(map_data2)) {
-        print("Warning: No country found for clicked location!")
-        return(NULL)
-      }
-      
-      clicked_country <- map_data2$iso_a3[nearest_country_index]
-      
-      print(paste("Matched country:", clicked_country))
-      
-      # Check if the country exists in the dataset
-      if (!clicked_country %in% intercrop$iso3) {
-        print("Warning: Clicked country not found in dataset!")
-        return(NULL)
-      }
-      
-      country_data <- intercrop |>
-        filter(iso3 == clicked_country) 
-      
-      if (nrow(country_data) == 0) {
-        return(NULL)
-      }
-      
-      total_experiments <- nrow(country_data)
-      
-      common_crop <- country_data |>
-        select(Crop_1_Common_Name, Crop_2_Common_Name) |>
-        pivot_longer(cols = everything(), values_to = "crop") |>
-        filter(!is.na(crop)) |>
-        count(crop, sort = TRUE) |>
-        slice_head(n = 1) |>
-        pull(crop) 
-      
-      common_pattern <- country_data |>
-        filter(!is.na(Intercropping_pattern)) |>
-        count(Intercropping_pattern, sort = TRUE) |>
-        slice_head(n = 1) |>
-        pull(Intercropping_pattern)
-      
-      # Return the updated table
-      
-      tagList(
-        h4(""),
-        tags$p(strong("Country: "), unique(country_data$Country)),
-        tags$p(strong("Experiments: "), total_experiments),
-        tags$p(strong("Top Crop: "), common_crop),
-        tags$p(strong("Top Pattern: "), common_pattern)
-      )
-      
-    })
-    
-    ###########################################################
-    
-    intercrop_sum_table<-reactive({
-      intercrop_summary_df<-intercrop |>
-        filter(Continent==input$Continent_type)|>
-        group_by(start_year)|>
-        summarize(mean_intercropped_yield=mean(Yield_total_intercropping,na.rm=TRUE),
-                  mean_LER=mean(LER_tot,na.rm=TRUE))
-    })
-    
-    output$intercrop_table<-renderTable({
-      intercrop_sum_table()
-    })
-    
-    #### Tab: PCA ####
-    
-    # PCA calculation (already done earlier)
-    intercrop_pca_scale <- intercrop_pca_data_clean |>
-      select(-Continent) |>  # Remove the 'Continent' column
-      prcomp(scale. = TRUE)  # Apply PCA with scaling
-    
-    # Extract Principal Component names for U
-    pc_names <- colnames(intercrop_pca_scale$x)
-    
-    # Update PC B choices dynamically based on PC A selection
-    observe({
-      updateSelectInput(session, "PC_B", choices = pc_names)
-    })
-    # Render the PCA plot using autoplot
-    output$PCA_plot <- renderPlot({
-      # Use selected PCs from the user input
-      PC_x <- as.integer(gsub("PC", "", input$PC_A))  # Convert "PC1" to 1, "PC2" to 2, etc.
-      PC_y <- as.integer(gsub("PC", "", input$PC_B))
-      
-      # Use autoplot to create the PCA biplot
-      autoplot(
-        intercrop_pca_scale,
-        data = intercrop_pca_data_clean,
-        loadings = TRUE,
-        colour = 'Continent',
-        loadings.label = TRUE,
-        loadings.colour = "grey",
-        loadings.label.colour = "black",
-        loadings.label.repel = TRUE,
-        loadings.label.fontface = "bold",
-        force = 10,  # Adjust label repulsion force
-        max.iter = 1000,  # Increase the number of iterations for label optimization
-        box.padding = 0.5,  # Increase box padding for labels
-        nudge_x = 0.1,  # Adjust nudge values if necessary
-        nudge_y = 0.1
+      theme(
+        text = element_text(size = text_size, family = "Lato"),              # Change all text size
+        axis.text = element_text(size = text_size),  
+        axis.text.y = element_text(family = "Open Sans"),# Axis tick labels
+        axis.title = element_text(size = text_size, family = "Open Sans"),        # Axis titles
+        legend.text = element_text(size = text_size), 
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"), 
+        legend.title = element_text(size = text_size, face = "bold")) +
+      scale_color_viridis_d(option = "viridis") +
+      scale_x_continuous(
+        breaks = seq(
+          from = min(cumulative$year, na.rm = TRUE),  
+          to = 2025, 
+          by = 5
+        )
       ) +
-        scale_color_viridis(discrete = TRUE) +  # Apply the Viridis color palette
-        theme_classic() +
-        theme(
-          text = element_text(size = 16, family = "Lato"),  # Change all text size
-          axis.text = element_text(size = 16),
-          axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
-          axis.title = element_text(size = 16, family = "Open Sans"),  # Axis titles
-          legend.text = element_text(size = 16),
-          axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
-          legend.title = element_text(size = 16, face = "bold")
-        )
-    })
+      labs(x = "Year", 
+           y = "Cumulative Experiments",
+           color = NULL)
     
-    output$PCA_var<-renderPlot({
-      ggplot(pct_expl_df, aes(x = pc, y = v)) +
-        geom_col() +
-        geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
-        labs(x = 'Principal component', y = 'Variance explained')+
-        theme_classic()+
-        theme(
-          text = element_text(size = text_size, family = "Lato"),  # Change all text size
-          axis.text = element_text(size = text_size),
-          axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
-          axis.title = element_text(size = text_size, family = "Open Sans"),  # Axis titles
-          legend.text = element_text(size = text_size),
-          axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
-          legend.title = element_text(size = text_size, face = "bold")
-        )
-    })
-    
-    #### Tab: LER plots ####
-    observe({
-      req(intercrop_LER)
-      # Get valid crop2 choices for default crop1 (Maize)
-      initial_choices <- unique(intercrop_LER |>
-                                  filter(crop1 == "Maize") |>
-                                  pull(crop2))
-      
-      updateSelectInput(session, "crop2_type",
-                        selected = "Cowpea",
-                        choices = initial_choices)
-    })
-    
-    
-    # Update crop2 choices dynamically based on crop1 selection
-    observeEvent(input$crop1_type, {
-      filtered_choices <- unique(intercrop |> 
-                                   filter(Crop_1_Common_Name == input$crop1_type) |> 
-                                   drop_na(LER_crop1, LER_crop2)|>
-                                   pull(Crop_2_Common_Name))
-      
-      updateSelectInput(session, "crop2_type", choices = filtered_choices)
-    })
-    
-    intercrop_LER_filtered <- reactive({
-      intercrop_LER |>
-        filter(crop1 == input$crop1_type, crop2 == input$crop2_type) |>
-        mutate(intercropping_design = ifelse(is.na(intercropping_design), "Not specified", intercropping_design)) |>
-        drop_na(ler_crop1, ler_crop2)
-    })
-    
-    output$LER_plot <- renderPlot({
-      
-      ggplot(data = intercrop_LER_filtered(), aes(x=ler_crop1, y = ler_crop2, color = country, shape = intercropping_design))+
-        geom_point(size = 3)+
-        geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
-                     linetype = "dashed", color = "black") +
-        #xlim(0,1.25)+
-        #ylim(0,1.25)+
-        labs(x = paste0(input$crop1_type, ' LER'), y = paste0(input$crop2_type, ' LER'), 
-             color = 'Country', 
-             shape = 'Intercropping design')+
-        theme_classic()+
-        theme(
-          text = element_text(size = text_size),              # Change all text size
-          axis.text = element_text(size = text_size),         # Axis tick labels
-          axis.title = element_text(size = text_size),        # Axis titles
-          legend.text = element_text(size = text_size),       # Legend labels
-          legend.title = element_text(size = text_size, face = "bold")  # Legend title
-          # plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
-        )+
-        scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
-    })
-    
-    # set up data for cumulative experiments by crop 
-    # find top 10 crop2s based on crop1
-    crop2_top <- reactive({
-      intercrop_LER |>
-        filter(crop1 == input$crop1_type)|>
-        group_by(crop2)|>
-        summarize(n = n())|>
-        arrange(desc(n))|>
-        slice(1:10)|>
-        pull(crop2)
-    })
-    
-    # big pipe op that filters to just crop1 and top crop2, 
-    # groups by crop1 and 2, 
-    # counts how many experiments are in a given year, groups by crop2, 
-    # calculate cumulative sum as the years go on, 
-    # and finally makes crop2 a factor with levels ordered by cumulative count and label with n=cumulative count
-    # for plotting purposes
-    crop1_crops_over_time <- reactive({
-      intercrop_LER |>
-        select(c(crop1, crop2, year)) |>
-        filter(crop1 == input$crop1_type, crop2 %in% crop2_top())|>
-        drop_na() |>
-        group_by(year, crop1, crop2) |>
-        summarise(count = n(), .groups = "drop") |>
-        group_by(crop2) |>
-        mutate(cumulative_count = cumsum(count), 
-               total_cumulative = max(cumulative_count)) |>
-        mutate(crop2 = factor(crop2, 
-                              levels = crop2,  # Order by cumulative count
-                              labels = paste0(crop2, " (n=", total_cumulative, ")"))) # Add count to label
-    })
-    
-    
-    # Plot experiments over time based of crop1
-    output$crop1_exp_over_time_plot <- renderPlot({
-      ggplot(data = crop1_crops_over_time(), aes(x = year, y = cumulative_count, color = crop2))+
-        geom_point()+
-        geom_line()+
-        labs(x = 'Year', 
-             y = 'Cumulative experiment count', 
-             color = 'Crop 2')+
-        theme_classic()+
-        theme(
-          text = element_text(size = text_size),              # Change all text size
-          axis.text = element_text(size = text_size),         # Axis tick labels
-          axis.title = element_text(size = text_size),        # Axis titles
-          legend.text = element_text(size = text_size),       # Legend labels
-          legend.title = element_text(size = text_size, face = "bold")  # Legend title
-          #plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
-        )+
-        scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
-    })
-  }
+  })
   
-  ### To finalize shiny app we have to combine them into an app
+  ### Tab 1A: Interactive Map ###
+  output$interactive_map <- renderPlotly({
+    p <- ggplot(map_data2) +
+      geom_sf(aes(fill = count), color = "gray40") +
+      scale_fill_gradientn(
+        colours = c("grey90", viridisLite::viridis(5)),
+        values = scales::rescale(c(0, 1, max(map_data2$count, na.rm = TRUE))),
+        limits = c(0, max(map_data2$count, na.rm = TRUE)),
+        name = ""
+      ) +
+      theme_minimal() +
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
+      theme(plot.margin = margin(0, 0, 0, 0)) +
+      labs(title = "", x = "", y  = "")
+    
+    ggplotly(p) |>
+      event_register("plotly_click")
+  })
   
-  shinyApp(ui=ui,server=server)
+  # Display country info
+  output$country_info <- renderUI({
+    click <- event_data("plotly_click")
+    
+    print(click)
+    
+    # Check if click data is valid
+    if (is.null(click) || !("x" %in% names(click)) || !("y" %in% names(click))) {
+      print("No country selected")
+      return(NULL)
+    }
+    
+    clicked_long <- click$x  # Extract longitude
+    clicked_lat <- click$y   # Extract latitude
+    
+    print(paste("Clicked coordinates: ", clicked_long, clicked_lat))
+    
+    # Ensure correct CRS
+    if (st_crs(map_data2)$epsg != 4326) {
+      map_data2 <- st_transform(map_data2, crs = 4326)
+    }
+    
+    
+    # Find the Country Name from Coordinates
+    clicked_point <- st_sfc(st_point(c(clicked_long, clicked_lat)), crs = 4326)
+    nearest_country_index <- tryCatch(
+      st_nearest_feature(clicked_point, map_data2),
+      error = function(e) NA)
+    
+    # Check if a valid country was found
+    if (is.na(nearest_country_index) || nearest_country_index > nrow(map_data2)) {
+      print("Warning: No country found for clicked location!")
+      return(NULL)
+    }
+    
+    clicked_country <- map_data2$iso_a3[nearest_country_index]
+    
+    print(paste("Matched country:", clicked_country))
+    
+    # Check if the country exists in the dataset
+    if (!clicked_country %in% intercrop$iso3) {
+      print("Warning: Clicked country not found in dataset!")
+      return(NULL)
+    }
+    
+    country_data <- intercrop |>
+      filter(iso3 == clicked_country) 
+    
+    if (nrow(country_data) == 0) {
+      return(NULL)
+    }
+    
+    total_experiments <- nrow(country_data)
+    
+    common_crop <- country_data |>
+      select(Crop_1_Common_Name, Crop_2_Common_Name) |>
+      pivot_longer(cols = everything(), values_to = "crop") |>
+      filter(!is.na(crop)) |>
+      count(crop, sort = TRUE) |>
+      slice_head(n = 1) |>
+      pull(crop) 
+    
+    common_pattern <- country_data |>
+      filter(!is.na(Intercropping_pattern)) |>
+      count(Intercropping_pattern, sort = TRUE) |>
+      slice_head(n = 1) |>
+      pull(Intercropping_pattern)
+    
+    # Return the updated table
+    
+    tagList(
+      h4(""),
+      tags$p(strong("Country: "), unique(country_data$Country)),
+      tags$p(strong("Experiments: "), total_experiments),
+      tags$p(strong("Top Crop: "), common_crop),
+      tags$p(strong("Top Pattern: "), common_pattern)
+    )
+    
+  })
+  
+  ###########################################################
+  
+  intercrop_sum_table<-reactive({
+    intercrop_summary_df<-intercrop |>
+      filter(Continent==input$Continent_type)|>
+      group_by(start_year)|>
+      summarize(mean_intercropped_yield=mean(Yield_total_intercropping,na.rm=TRUE),
+                mean_LER=mean(LER_tot,na.rm=TRUE))
+  })
+  
+  output$intercrop_table<-renderTable({
+    intercrop_sum_table()
+  })
+  
+  #### Tab: PCA ####
+  filtered_pca_scale <- reactive({
+    # Extract the selected PCs
+    selected_pc_1 <- as.numeric(gsub("PC", "", input$pc_select_1))  # Extract the first selected PC
+    selected_pc_2 <- as.numeric(gsub("PC", "", input$pc_select_2))  # Extract the second selected PC
+    
+    list(selected_pc_1 = selected_pc_1, selected_pc_2 = selected_pc_2)
+  })
+  
+  # Update the available choices for the second PC when the first PC is selected
+  observe({
+    # Get the currently selected PC1
+    selected_pc_1 <- as.numeric(gsub("PC", "", input$pc_select_1))
+    
+    # Update the choices for the second PC to exclude the first selected PC
+    updateSelectInput(session, "pc_select_2", 
+                      choices = setdiff(paste("PC", 1:10, sep = ""), paste("PC", selected_pc_1, sep = "")),
+                      selected = paste("PC", ifelse(selected_pc_1 == 1, 2, 1), sep = ""))
+  })
+  
+  # Render the plot based on selected PCs
+  output$PCA_plot <- renderPlot({
+    # Get the selected PCs from the reactive expression
+    selected_pc <- filtered_pca_scale()
+    
+    # Use autoplot to plot the selected PCs
+    autoplot(intercrop_pca_scale, 
+             data = intercrop_pca_data_clean,
+             x = selected_pc$selected_pc_1, 
+             y = selected_pc$selected_pc_2, 
+             loadings = TRUE,
+             colour = 'Continent',
+             loadings.label = TRUE,
+             loadings.colour = "grey",
+             loadings.label.colour = "black",
+             loadings.label.repel = TRUE,
+             loadings.label.fontface = "bold",  
+             force = 10,  
+             max.iter = 1000,  
+             box.padding = 0.5,  
+             nudge_x = 0.1,  
+             nudge_y = 0.1
+    ) +
+      scale_color_viridis(discrete = TRUE) +   
+      theme_classic() +
+      theme(
+        text = element_text(size = 12, family = "Lato"),  
+        axis.text = element_text(size = 12),
+        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  
+        axis.title = element_text(size = 12, family = "Open Sans"),  
+        legend.text = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
+        legend.title = element_text(size = 12, face = "bold")
+      )
+  })
+  
+  output$PCA_var<-renderPlot({
+    ggplot(pct_expl_df, aes(x = pc, y = v)) +
+      geom_col() +
+      geom_text(aes(label = scales::percent(pct_v)), vjust = 0, nudge_y = .05) +
+      labs(x = 'Principal component', y = 'Variance explained')+
+      theme_classic()+
+      theme(
+        text = element_text(size = text_size, family = "Lato"),  # Change all text size
+        axis.text = element_text(size = text_size),
+        axis.text.y = element_text(hjust = 1, size = 16, family = "Open Sans"),  # Axis tick labels
+        axis.title = element_text(size = text_size, family = "Open Sans"),  # Axis titles
+        legend.text = element_text(size = text_size),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 16, family = "Open Sans"),
+        legend.title = element_text(size = text_size, face = "bold")
+      )
+  })
+  
+  #### Tab: LER plots ####
+  observe({
+    req(intercrop_LER)
+    # Get valid crop2 choices for default crop1 (Maize)
+    initial_choices <- unique(intercrop_LER |>
+                                filter(crop1 == "Maize") |>
+                                pull(crop2))
+    
+    updateSelectInput(session, "crop2_type",
+                      selected = "Cowpea",
+                      choices = initial_choices)
+  })
+  
+  
+  # Update crop2 choices dynamically based on crop1 selection
+  observeEvent(input$crop1_type, {
+    filtered_choices <- unique(intercrop |> 
+                                 filter(Crop_1_Common_Name == input$crop1_type) |> 
+                                 drop_na(LER_crop1, LER_crop2)|>
+                                 pull(Crop_2_Common_Name))
+    
+    updateSelectInput(session, "crop2_type", choices = filtered_choices)
+  })
+  
+  intercrop_LER_filtered <- reactive({
+    intercrop_LER |>
+      filter(crop1 == input$crop1_type, crop2 == input$crop2_type) |>
+      mutate(intercropping_design = ifelse(is.na(intercropping_design), "Not specified", intercropping_design)) |>
+      drop_na(ler_crop1, ler_crop2)
+  })
+  
+  output$LER_plot <- renderPlot({
+    
+    ggplot(data = intercrop_LER_filtered(), aes(x=ler_crop1, y = ler_crop2, color = country, shape = intercropping_design))+
+      geom_point(size = 3)+
+      geom_segment(aes(x = 0, y = 1, xend = 1, yend = 0), 
+                   linetype = "dashed", color = "black") +
+      #xlim(0,1.25)+
+      #ylim(0,1.25)+
+      labs(x = paste0(input$crop1_type, ' LER'), y = paste0(input$crop2_type, ' LER'), 
+           color = 'Country', 
+           shape = 'Intercropping design')+
+      theme_classic()+
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
+      theme(
+        text = element_text(size = text_size),              # Change all text size
+        axis.text = element_text(size = text_size),         # Axis tick labels
+        axis.title = element_text(size = text_size),        # Axis titles
+        legend.text = element_text(size = text_size),       # Legend labels
+        legend.title = element_text(size = text_size, face = "bold")  # Legend title
+        # plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+      )+
+      scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
+  })
+  
+  # set up data for cumulative experiments by crop 
+  # find top 10 crop2s based on crop1
+  crop2_top <- reactive({
+    intercrop_LER |>
+      filter(crop1 == input$crop1_type)|>
+      group_by(crop2)|>
+      summarize(n = n())|>
+      arrange(desc(n))|>
+      slice(1:10)|>
+      pull(crop2)
+  })
+  
+  # big pipe op that filters to just crop1 and top crop2, 
+  # groups by crop1 and 2, 
+  # counts how many experiments are in a given year, groups by crop2, 
+  # calculate cumulative sum as the years go on, 
+  # and finally makes crop2 a factor with levels ordered by cumulative count and label with n=cumulative count
+  # for plotting purposes
+  crop1_crops_over_time <- reactive({
+    intercrop_LER |>
+      select(c(crop1, crop2, year)) |>
+      filter(crop1 == input$crop1_type, crop2 %in% crop2_top())|>
+      drop_na() |>
+      group_by(year, crop1, crop2) |>
+      summarise(count = n(), .groups = "drop") |>
+      group_by(crop2) |>
+      mutate(cumulative_count = cumsum(count), 
+             total_cumulative = max(cumulative_count)) |>
+      mutate(crop2 = factor(crop2, 
+                            levels = crop2,  # Order by cumulative count
+                            labels = paste0(crop2, " (n=", total_cumulative, ")"))) # Add count to label
+  })
+  
+  
+  # Plot experiments over time based of crop1
+  output$crop1_exp_over_time_plot <- renderPlot({
+    ggplot(data = crop1_crops_over_time(), aes(x = year, y = cumulative_count, color = crop2))+
+      geom_point()+
+      geom_line()+
+      labs(x = 'Year', 
+           y = 'Cumulative experiment count', 
+           color = 'Crop 2')+
+      theme_classic()+
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
+      theme(
+        text = element_text(size = text_size),              # Change all text size
+        axis.text = element_text(size = text_size),         # Axis tick labels
+        axis.title = element_text(size = text_size),        # Axis titles
+        legend.text = element_text(size = text_size),       # Legend labels
+        legend.title = element_text(size = text_size, face = "bold")  # Legend title
+        #plot.margin = margin(0, 0, 0, 0, "cm")       # Remove extra margin space
+      )+
+      scale_color_viridis(discrete = TRUE)    # Apply the Viridis color palette
+  })
+}
+
+### To finalize shiny app we have to combine them into an app
+
+shinyApp(ui=ui,server=server)
