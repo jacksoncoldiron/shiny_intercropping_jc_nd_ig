@@ -16,6 +16,7 @@ library(shinydashboard)
 library(shinycssloaders)
 
 
+
 showtext_auto()
 
 ### load viridis### load data ###  
@@ -278,7 +279,7 @@ ui <- fluidPage(
                              ")),
                                  # Wrap the logo in a div with the 'logo-center' class
                                  div(class = "logo-center", 
-                                     tags$img(src = "test_logo.png", class = "logo-img")
+                                     tags$img(src = "logo2.png", class = "logo-img")
                                  ),
                        menuItem("Home", tabName = "home", icon = icon("home"), selected = TRUE), # selected TRUE not working
                        menuItem("Intercropping by Continent", tabName = "continent", icon = icon("thumbtack")),
@@ -472,7 +473,6 @@ ui <- fluidPage(
 ### create the server function (where all the magic happens from data analysis) ### 
 # Year range slider for user to select the year range
 server <- function(input,output, session){
-  
   
   ### Tab 1: Experiments Overview ###
   filteredData <- reactive({
