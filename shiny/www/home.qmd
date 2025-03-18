@@ -17,7 +17,7 @@ knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 
 <small>*Corn and soy intercropped in the Gansu province of China.*</small>
 
-:::panel-tabset
+::: panel-tabset
 ## Intercropping 101
 
 ```{r}
@@ -62,11 +62,32 @@ j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 ## Definitions
 
-**Land Equivalent Ratio:**
+**Land Equivalent Ratio**
 
-[**Principal Component Analysis Loadings**]{.underline}
+The Land Equivalent Ratio (LER) describes the ratio of land required in solecropping to produce the same yield as in intercropping^1^. It is a dimensionless number and is a sum of the individual yield ratios for each crop component, given the same total absolute yield. An LER of 1 indicates no difference in yield potential of intercropping vs. solecropping, whereas an LER greater than 1 suggests land saving potential of intercropping compared to solecropping.
 
-**Experimental site soil and climate conditions**
+In the example below, you would need 1.4 hectares (ha) in solecropping to produce the same absolute yield - in this case, 4t of grain and 9t of fruit - as in 1 ha of intercropping.
+<br/>
+<br/>
+
+```{r}
+#| echo: false
+#| out.width: "80%"
+#| out.height: "auto"
+
+knitr::include_graphics(here::here("shiny","www","LER_def.png"))
+
+```
+
+<small>*Image credit: Tobi Kellner*</small>
+
+<small>\[1\] Mead R, Willey RW. The Concept of a ‘Land Equivalent Ratio’ and Advantages in Yields from Intercropping. *Experimental Agriculture*. 1980;16(3):217-228. doi:10.1017/S0014479700010978</small>
+
+<br/>
+
+**Principal Component Analysis Loadings**
+
+*Experimental site soil and climate conditions*
 
 a.  China: if experiment was conducted in China
 
@@ -74,7 +95,7 @@ b.  Latitude: latitude of experimental site
 
 c.  Rest of World: if experiment was conducted outside of China
 
-**Intercropping design descriptors**
+*Intercropping design descriptors*
 
 a.  Additive design: adding intercrop plants to a base crop without reducing the base crop's population
 
@@ -88,7 +109,7 @@ e.  Mixed pattern: two crops are grown together in the same field without a dist
 
 f.  AF (Agroforestry) pattern: Rows of trees and/or shrubs are planted to create alleys within which agricultural or horticultural crops are grow
 
-**Crop and yield variables**
+*Crop and yield variables*
 
 a.  LER: total Land Equivalent Ratio as provided by authors
 
