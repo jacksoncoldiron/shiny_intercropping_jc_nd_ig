@@ -167,6 +167,30 @@ ui <- fluidPage(
   ### declare css styling ### 
   tags$head(
     tags$style(HTML("
+        /* Change the background color of the whole page */
+    body {
+      background-color: #f0f2f5 !important; /* #f0f2f5 Light gray */
+    }
+
+    /* Sidebar background color */
+    .main-sidebar {
+      background-color: #2c3e50 !important; /* Dark blue-gray */
+    }
+    
+        /* Sidebar text color */
+    .sidebar-menu > li > a {
+      color: white !important;
+    }
+    
+        /* Change background color of tab panels */
+    .tab-content {
+      background-color: #f0f2f5 !important;
+      padding: 20px !important;
+      border-radius: 10px !important;
+    }
+
+
+    
       /* Ensure header title bar and sidebar toggle button are the same height */
       .main-header .logo {
         height: 80px !important;
@@ -207,9 +231,18 @@ ui <- fluidPage(
       .sidebar-menu > li > a {
         font-size: 20px !important;
       }
+      
+      /* Increase font size of the numbers on the slider */
+      .irs-grid-text {
+        font-size: 20px !important;  /* Adjust as needed */
+      }
+
+      /* Increase font size for the selected value */
+      .irs-single, .irs-from, .irs-to {
+        font-size: 20px !important;
+      }
     "))
   ),
-  
   
   # remove shiny "red" warning messages on GUI
   # tags$style(type="text/css",
@@ -256,8 +289,9 @@ ui <- fluidPage(
                 includeHTML("www/home.html")
                 
         ),
+        
         tabItem(tabName = "continent",
-                titlePanel("Experiments over time for Continents of your choosing!"),
+                titlePanel("Experiments over time for continents of your choosing!"),
                 sidebarLayout(
                   position = "left",
                   sidebarPanel(
@@ -270,20 +304,24 @@ ui <- fluidPage(
                   
                   # Plotting the cumulative experiments over time
                   mainPanel(
-                    fluidRow(
-                      column(12, plotOutput("plotCumulative")),
-                      column(8, offset = 1, 
-                             sliderInput("yearRange", "Select Year Range:",
-                                         label = tags$span("Select Year Range:", style = "font-size: 20px; font-weight: bold;"),
-                                         min = min(cumulative$year),
-                                         max = 2025,
-                                         value = c(min(cumulative$year), max(cumulative$year)),
-                                         step = 1,
-                                         sep = "",
-                                         width = "100%",
-                             ),
-                             width = 9
-                      )
+                    width = 9,
+                    tags$div(
+                      style = "padding: 5px; border-radius: 10px; background-color: #f0f2f5;",
+                      fluidRow(
+                        column(12, offset = 0,
+                                 plotOutput("plotCumulative")
+                        ),
+                        column(8, offset = 1, 
+                           sliderInput("yearRange", "",
+                                       min = min(cumulative$year),
+                                       max = 2025,
+                                       value = c(min(cumulative$year), max(cumulative$year)),
+                                       step = 1,
+                                       sep = "",
+                                       width = "89%",
+                                       )
+                               )
+                        )
                     )
                   )
                 )                
@@ -339,28 +377,15 @@ ui <- fluidPage(
                 fluidRow(
                   # First plot (LER_plot)
                   column(10, offset = 0, 
-                         tags$div(
-                           style = "padding: 5px; border-radius: 10px; background-color: white;",
-                           
-                           # Title for the first plot
-                           tags$h3("LER Comparison by Crop Type", style = "text-align: center; color: black;"),
-                           
-                           plotOutput('LER_plot', width = "100%", height = "500px")
-                         ),
-                         
+                         plotOutput('LER_plot', width = "100%", height = "500px"),
                          tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
                   ),
                   
                   # Second plot (crop1_exp_over_time_plot)
                   column(10, offset = 0, 
-                         tags$div(
-                           style = "padding: 5px; border-radius: 10px; background-color: white;",
-                           
                            # Title for the second plot
                            tags$h3("Cumulative Experiments of Crop 1 Over Time", style = "text-align: center; color: black;"),
-                           
                            plotOutput('crop1_exp_over_time_plot', width = "100%", height = "500px")
-                         )
                   )
                 )
               )
@@ -433,6 +458,19 @@ server <- function(input,output, session){
       geom_point(size = 1) +
       theme_classic() +
       theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
+      
+      theme(
         text = element_text(size = text_size, family = "Lato"),              # Change all text size
         axis.text = element_text(size = text_size),  
         axis.text.y = element_text(family = "Open Sans"),# Axis tick labels
@@ -465,6 +503,18 @@ server <- function(input,output, session){
         name = ""
       ) +
       theme_minimal() +
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
       theme(plot.margin = margin(0, 0, 0, 0)) +
       labs(title = "", x = "", y  = "")
     
@@ -659,6 +709,18 @@ server <- function(input,output, session){
            shape = 'Intercropping design')+
       theme_classic()+
       theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
+      theme(
         text = element_text(size = text_size),              # Change all text size
         axis.text = element_text(size = text_size),         # Axis tick labels
         axis.title = element_text(size = text_size),        # Axis titles
@@ -712,6 +774,18 @@ server <- function(input,output, session){
            y = 'Cumulative experiment count', 
            color = 'Crop 2')+
       theme_classic()+
+      theme(
+        panel.background = element_rect(fill = "#f0f2f5", color = NA),  # Change plot panel background
+        plot.background = element_rect(fill = "#f0f2f5", color = NA),   # Change full plot background
+        legend.background = element_rect(fill = "#f0f2f5", color = NA), # Change legend background
+        legend.key = element_rect(fill = "#f0f2f5", color = NA),        # Change legend key background
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank(),  # Remove minor grid lines
+        axis.text = element_text(size = text_size, color = "black"),
+        axis.title = element_text(size = text_size, color = "black"),
+        legend.text = element_text(size = text_size, color = "black"),
+        legend.title = element_text(size = text_size, color = "black", face = "bold")
+      )+
       theme(
         text = element_text(size = text_size),              # Change all text size
         axis.text = element_text(size = text_size),         # Axis tick labels
