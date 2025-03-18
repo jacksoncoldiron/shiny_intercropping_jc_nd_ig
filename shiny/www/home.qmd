@@ -64,9 +64,9 @@ j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 **Land Equivalent Ratio**
 
-The Land Equivalent Ratio (LER) describes the ratio of land required in solecropping to produce the same yield as in intercropping^1^. It is a dimensionless number and is a sum of the individual yield ratios for each crop component, given the same total absolute yield. An LER of 1 indicates no difference in yield potential of intercropping vs. solecropping, whereas an LER greater than 1 suggests land saving potential of intercropping compared to solecropping.
+The Land Equivalent Ratio (LER) describes the ratio of land required in solecropping to produce the same yield as in intercropping^1^. It is a dimensionless number and is a sum of the individual yield ratios for each crop component, given the same total absolute yield. An LER of 1 indicates no difference in yield potential of intercropping vs. solecropping, whereas an LER greater than 1 suggests land saving potential of intercropping.
 
-In the example below, you would need 1.4 hectares (ha) in solecropping to produce the same absolute yield - in this case, 4t of grain and 9t of fruit - as in 1 ha of intercropping.
+In the example below, you would need 1.4 hectares (ha) in solecropping to produce the same absolute yield - in this case, 4t of grain and 9t of fruit - as 1 ha of intercropping would produce.
 <br/>
 <br/>
 
