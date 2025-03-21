@@ -1,3 +1,8 @@
+# Intercropping Around the World
+# Shiny App
+# Jackson Coldiron, Isa Elias, Nic DeStephano
+
+#### LIBRARIES ####
 library(tidyverse)
 library(shiny)
 library(bslib)
@@ -14,15 +19,18 @@ library(showtext)
 library(png)
 library(shinydashboard)
 library(shinycssloaders)
+library(shinyjs)
 
+#################################################################################################
 
-
+#### DATA WRANGLING ####
 showtext_auto()
 
-### load viridis### load data ###  
+# load viridis
+# load data  
 intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
 
-### Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
+# Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
 intercrop$Yield_total_intercropping <- as.numeric(gsub(",", ".", intercrop$Yield_total_intercropping))
 intercrop$LER_tot <- as.numeric(gsub(",", ".", intercrop$LER_tot))
 intercrop$LER_crop1 <- as.numeric(gsub(",", ".", intercrop$LER_crop1))
@@ -34,7 +42,7 @@ intercrop <- intercrop|>
   mutate(iso3 = countrycode(Country, origin = "country.name", destination = "iso3c")) |>
   mutate(Country = recode(Country, "Philipines" = "Phillippines"))
 
-### Custom Theme ###
+# Custom Theme
 yeti_theme <- bs_theme(bootswatch = "yeti") |>
   bs_theme_update(
     bg = "#FFFFFF",        # ✅ White background
@@ -50,13 +58,13 @@ yeti_theme <- bs_theme(bootswatch = "yeti") |>
     font_scale = 1.1  
   )
 
-### Declare global plot variables
+#Declare global plot variables
 text_size <- 16
 point_size <- 3
 
 # Using theme_classic
 
-### TAB 1: Experiments over time data setup ### 
+### TAB 1: Experiments over time data setup
 # Take only the time and country for Widget 1
 intercrop_time <- intercrop |>
   janitor::clean_names() |>
@@ -101,7 +109,7 @@ map_data2 <- world |>
   mutate(count = replace_na(count, 0))
 
 
-### TAB 2: LER plots data setup ###
+### TAB 2: LER plots data setup
 intercrop_LER <- intercrop |>
   select('Country', 'Continent', 'end_year', 'Crop_1_Common_Name', 'Crop_2_Common_Name', 'LER_crop1', 'LER_crop2', 'LER_tot', 'Intercropping_design', 'Intercropping_pattern', 'Greenhouse', 'Experiment_year', 'Organic_ferti', 'Mineral_ferti') |>
   janitor::clean_names() |>
@@ -110,7 +118,7 @@ intercrop_LER <- intercrop |>
   mutate(country = as.factor(country))
 
 
-### TAB 3: PCA Biplot data setup ### 
+### TAB 3: PCA Biplot data setup
 library(ggfortify)
 
 # Select out the relevant variables we want to assess for PCA
@@ -161,14 +169,62 @@ pct_expl_df<-pct_expl_df|>
   arrange(desc(pct_v))|>
   head(6) 
 
+#################################################################################################
 
-# ### create the user interface ###
+#### CREATE USER INTERFACE ####
 
-ui <- fluidPage(
-
-  ### declare css styling ### 
-  tags$head(
-    tags$style(HTML("
+ui <- dashboardPage(
+    skin = "blue",
+    
+    ## Title ##
+    dashboardHeader(
+      title = "Intercropping Around the World",  
+      titleWidth = 320
+    ),
+    
+    ## Sidebar Panel ##
+    dashboardSidebar(width = 320,
+                     sidebarMenu(id = 'selected_tab',
+                                 selected = "home",
+                                 # Add margin-top to move the logo down
+                                 tags$style(HTML("
+                               .logo-center {
+                                 display: flex;
+                                 justify-content: center;
+                                 align-items: center;
+                                 margin-top: 25px; /* Adjust this value as needed */
+                                 margin-bottom: 10px;
+                               }
+                               .logo-img {
+                                 width: 200px; /* Adjust the size as needed */
+                               }
+                             ")),
+                                 # Wrap the logo in a div with the 'logo-center' class
+                                 div(class = "logo-center", 
+                                     tags$img(src = "logo3.png", class = "logo-img")
+                                 ),
+                       menuItem("Home", tabName = "home", icon = icon("home")),
+                       menuItem("Intercropping by Continent", tabName = "continent", icon = icon("thumbtack")),
+                       menuItem("Map of Experiments", tabName = "map", icon = icon("map marked alt")),
+                       menuItem("LER by Crop Types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
+                       menuItem("Principal Component Analysis", tabName = "pca", icon = icon("stats", lib = "glyphicon")),
+                       tags$p(
+                         tags$br(),
+                         "Developed by",
+                         tags$a(href = "https://www.linkedin.com/in/jackson-coldiron/", "Jackson Coldiron", target = "_blank"), tags$br(),
+                         tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicolas DeStephano", target = "_blank"), tags$br(),
+                         "and", tags$a(href = "https://www.linkedin.com/in/isa-elias/", "Isa Elias", target = "_blank"), tags$br(),
+                         style = "font-style: italic; font-size: 14px; text-align: left; padding-left: 15px;")
+                     )
+    ), # end dashboardSidebar
+    
+    ## Panels ##
+    dashboardBody(
+     # Enable Shinyjs to delay loading for home page
+       useShinyjs(), 
+      # Declare css styling
+      tags$head(
+        tags$style(HTML("
         /* Change the background color of the whole page */
     body {
       background-color: #f0f2f5 !important; /* #f0f2f5 Light gray */
@@ -244,70 +300,19 @@ ui <- fluidPage(
         font-size: 20px !important;
       }
     "))
-  ),
-  
-  # remove shiny "red" warning messages on GUI
-  # tags$style(type="text/css",
-  #            ".shiny-output-error { visibility: hidden; }",
-  #            ".shiny-output-error:before { visibility: hidden; }"
-  # ),
-  
-  # load page layout
-  dashboardPage(
-    
-    skin = "blue",
-    
-    dashboardHeader(
-      title = "Intercropping Around the World",  
-      titleWidth = 320
-    ),
-    
-    dashboardSidebar(width = 320,
-                     sidebarMenu(id = 'selected_tab',
-                                 # Add margin-top to move the logo down
-                                 tags$style(HTML("
-                               .logo-center {
-                                 display: flex;
-                                 justify-content: center;
-                                 align-items: center;
-                                 margin-top: 25px; /* Adjust this value as needed */
-                                 margin-bottom: 10px;
-                               }
-                               .logo-img {
-                                 width: 200px; /* Adjust the size as needed */
-                               }
-                             ")),
-                                 # Wrap the logo in a div with the 'logo-center' class
-                                 div(class = "logo-center", 
-                                     tags$img(src = "logo3.png", class = "logo-img")
-                                 ),
-                       menuItem("Home", tabName = "home", icon = icon("home")),
-                       menuItem("Intercropping by Continent", tabName = "continent", icon = icon("thumbtack")),
-                       menuItem("Map of Experiments", tabName = "map", icon = icon("map marked alt")),
-                       menuItem("LER by Crop Types", tabName = "LER_comp", icon = icon("random", lib = "glyphicon")),
-                       menuItem("Principal Component Analysis", tabName = "pca", icon = icon("stats", lib = "glyphicon")),
-                       tags$p(
-                         tags$br(),
-                         "Developed by",
-                         tags$a(href = "https://www.linkedin.com/in/jackson-coldiron/", "Jackson Coldiron", target = "_blank"), tags$br(),
-                         tags$a(href = "https://www.linkedin.com/in/nicolasdestephano/", "Nicolas DeStephano", target = "_blank"), tags$br(),
-                         "and", tags$a(href = "https://www.linkedin.com/in/isa-elias/", "Isa Elias", target = "_blank"), tags$br(),
-                         style = "font-style: italic; font-size: 14px; text-align: left; padding-left: 15px;")
-                     )
-    ), # end dashboardSidebar
-    
-    dashboardBody(
+      ),
 
       tabItems(
         
+        # Home Panel #
         tabItem(tabName = "home",
-                
-                
+            
                 # home section
-                includeHTML("www/home.html")
+                uiOutput("home_html")
                 
         ),
         
+        # Cumulative Plot Panel #
         tabItem(tabName = "continent",
                 titlePanel("Experiments over time for continents of your choosing!"),
                 sidebarLayout(
@@ -345,6 +350,7 @@ ui <- fluidPage(
                 )                
         ),
         
+        # Map Panel #
         tabItem(tabName = 'map',
           titlePanel("Click a country to learn more!"),
           sidebarLayout(
@@ -364,7 +370,8 @@ ui <- fluidPage(
           )          
         ),
         
-        tabItem(tabName = "LER_comp", 
+       # LER Panel #
+         tabItem(tabName = "LER_comp", 
             titlePanel("Choose two crops to compare their relative LER"),
             sidebarLayout(
               sidebarPanel(
@@ -396,7 +403,7 @@ ui <- fluidPage(
                   # First plot (LER_plot)
                   column(10, offset = 0, 
                          plotOutput('LER_plot', width = "100%", height = "500px"),
-                         tags$hr(style = "border-top: 2px solid blue; margin: 30px 0;")  # Adds separation line
+                         tags$hr(style = "border-top: 2px dark blue; margin: 30px 0;")  # Adds separation line
                   ),
                   
                   # Second plot (crop1_exp_over_time_plot)
@@ -407,10 +414,11 @@ ui <- fluidPage(
                   )
                 )
               )
-            )   
-        ),
+            )
+          ),
         
-        tabItem(tabName = "pca",
+      # PCA Panel #
+         tabItem(tabName = "pca",
                 titlePanel("Explore a Principal Component Analysis of the data"),
                 sidebarLayout(
                   sidebarPanel(
@@ -470,13 +478,18 @@ ui <- fluidPage(
       ) # end tab items
     ) # end dashboardBody
   ) # end dashboardPage
-) # end shiny fluid page
 
-### create the server function (where all the magic happens from data analysis) ### 
-# Year range slider for user to select the year range
+#################################################################################################
+
+#### CREATE SERVER ####
 server <- function(input,output, session){
   
-  session$onFlushed(function() {
+  # Force home page to load intially
+  output$home_html <- renderUI({
+    includeHTML("www/home.html")
+  })
+  
+  observe({
     updateTabItems(session, "selected_tab", "home")
   })
   
@@ -641,8 +654,6 @@ server <- function(input,output, session){
     
   })
   
-###########################################################
- 
    intercrop_sum_table<-reactive({
     intercrop_summary_df<-intercrop |>
       filter(Continent==input$Continent_type)|>
@@ -655,7 +666,7 @@ server <- function(input,output, session){
     intercrop_sum_table()
   })
   
-  #### Tab: PCA ####
+  #### Tab 3: PCA ####
   filtered_pca_scale <- reactive({
     # Extract the selected PCs
     selected_pc_1 <- as.numeric(gsub("PC", "", input$pc_select_1))  # Extract the first selected PC
@@ -752,7 +763,7 @@ server <- function(input,output, session){
       )
   })
   
-  #### Tab: LER plots ####
+  #### Tab 2: LER plots ####
   observe({
     req(intercrop_LER)
     # Get valid crop2 choices for default crop1 (Maize)
@@ -885,6 +896,7 @@ server <- function(input,output, session){
   })
 }
 
-### To finalize shiny app we have to combine them into an app
+####################################################################################
 
+#### FINALIZE SHINY ####
 shinyApp(ui=ui,server=server)
