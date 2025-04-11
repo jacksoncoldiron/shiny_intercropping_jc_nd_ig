@@ -23,17 +23,12 @@ library(shinyjs)
 
 #################################################################################################
 
-### ONLINE HOSTING ###
-rsconnect::setAccountInfo(name='jacksoncoldiron', token='357A4EE1C970386FE11134602C41048F', secret='3NaS9Js9Bq14IDJ04pnvDbYT7imTyGmOkejPpGBU')
-library(rsconnect)
-rsconnect::deployApp(here::here("shiny"))
-
 #### DATA WRANGLING ####
 showtext_auto()
 
 # load viridis
 # load data  
-intercrop <- read_delim(delim = ';', here::here("data", "Database.csv"))
+intercrop <- read_delim(delim = ';', "data/Database.csv")
 
 # Convert relevant columns to numeric data and create new column extracting experiment start year from the experimental period ### 
 intercrop$Yield_total_intercropping <- as.numeric(gsub(",", ".", intercrop$Yield_total_intercropping))

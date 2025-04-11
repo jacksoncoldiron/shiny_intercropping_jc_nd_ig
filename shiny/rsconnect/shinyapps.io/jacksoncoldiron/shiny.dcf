@@ -5,6 +5,6 @@ account: jacksoncoldiron
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14388943
-bundleId: 10034122
+bundleId: 10101566
 url: https://jacksoncoldiron.shinyapps.io/shiny/
 version: 1

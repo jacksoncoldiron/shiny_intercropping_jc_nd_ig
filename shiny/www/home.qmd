@@ -12,10 +12,9 @@ Intercropping is an agricultural practice where two crop species are grown toget
 #| echo: false
 #| out.width: '100%'
 #| out.height: "auto"
+#| fig-cap: "Corn (taller plants) intercropped with chili peppers. Photo by Bozhi Wu."
 knitr::include_graphics(here::here("shiny","www","chinapic.jpg"))
 ```
-
-<small>*Corn and soy intercropped in the Gansu province of China.*</small>
 
 ::: panel-tabset
 ## Intercropping 101
@@ -66,9 +65,7 @@ j.  Mechanical harvest of mixed lentil/spring wheat intercropping in France.
 
 The Land Equivalent Ratio (LER) describes the ratio of land required in solecropping to produce the same yield as in intercropping^1^. It is a dimensionless number and is a sum of the individual yield ratios for each crop component, given the same total absolute yield. An LER of 1 indicates no difference in yield potential of intercropping vs. solecropping, whereas an LER greater than 1 suggests land saving potential of intercropping.
 
-In the example below, you would need 1.4 hectares (ha) in solecropping to produce the same absolute yield - in this case, 4t of grain and 9t of fruit - as 1 ha of intercropping would produce.
-<br/>
-<br/>
+In the example below, you would need 1.4 hectares (ha) in solecropping to produce the same absolute yield - in this case, 4t of grain and 9t of fruit - as 1 ha of intercropping would produce. <br/> <br/>
 
 ```{r}
 #| echo: false
@@ -129,7 +126,7 @@ Data is derived from a comprehensive meta-analysis of global intercropping exper
 
 -   Corn and Wheat logo: Courtesy of pngtree.com
 
--   Corn and Soy photo: Courtesy of Zoe Sims 2024
+-   Logo image: Provided by Zoe Sims (Bren PhD student)
 
 -   Intercropping diagram: Li C. et al. (2020). Nature Plants
 :::
